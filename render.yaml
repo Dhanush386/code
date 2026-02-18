@@ -11,4 +11,4 @@ services:
       - key: PRISMA_CLIENT_ENGINE_TYPE
         value: library
       - key: DATABASE_URL
-        fromContext: dbUrl # Or sync with your external URL
+        sync: false # Set manually in Render Dashboard
