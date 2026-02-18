@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 const PUBLIC_JUDGE0_URL = 'https://ce.judge0.com/submissions?base64_encoded=false&wait=true';
 
@@ -9,7 +10,7 @@ const LANGUAGE_MAP: Record<string, number> = {
     'java': 62
 };
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const { source_code, language, stdin } = body;
