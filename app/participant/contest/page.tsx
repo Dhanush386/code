@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Editor from '@monaco-editor/react';
 import {
@@ -31,7 +31,9 @@ const BOILERPLATES: Record<string, string> = {
     java: `// Standard Java Template (Use Main as class name)\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your code here\n    }\n}`
 };
 
-export default function ContestInterface() {
+export const dynamic = 'force-dynamic';
+
+function ContestContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const code = searchParams.get('code');
@@ -751,5 +753,17 @@ export default function ContestInterface() {
                 )}
             </AnimatePresence>
         </div>
+    );
+}
+
+export default function ContestInterface() {
+    return (
+        <Suspense fallback={
+            <div className="h-screen bg-white flex flex-col items-center justify-center">
+                <Loader2 className="animate-spin text-indigo-500" size={60} />
+            </div>
+        }>
+            <ContestContent />
+        </Suspense>
     );
 }
