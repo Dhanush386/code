@@ -7,7 +7,7 @@ services:
     startCommand: npx prisma migrate deploy && npm start
     envVars:
       - key: NODE_VERSION
-        value: 20.0.0
+        value: 20.19.0
       - key: PRISMA_CLIENT_ENGINE_TYPE
         value: library
       - key: DATABASE_URL
