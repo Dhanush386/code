@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: code-relay-platform
+    env: node
+    plan: free # Change to 'starter' if using a Disk for persistence
+    buildCommand: npm install && npm run build
+    startCommand: npx prisma migrate deploy && npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: PRISMA_CLIENT_ENGINE_TYPE
+        value: library
+    # Note: SQLite on Render requires a 'Disk' for persistence across restarts.
+    # To enable persistence, uncomment the following lines and upgrade to a paid service.
+    # disk:
+    #   name: prisma-db
+    #   mountPath: /opt/render/project/src/prisma
+    #   sizeGB: 1
