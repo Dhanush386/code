@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Organizer {
+  id       String @id @default(cuid())
+  username String @unique
+  password String
+  exams    Exam[]
+}
+
+model Participant {
+  id           String      @id @default(cuid())
+  teamName     String      @unique
+  collegeName  String
+  members      String      // Comma-separated or JSON string
+  currentLevel Int         @default(1)
+  score        Int         @default(0)
+  totalTime    Int         @default(0) // Seconds
+  isStarted    Boolean     @default(false)
+  lastActive   DateTime    @default(now())
+  submissions  Submission[]
+  exams        ParticipantExam[]
+}
+
+model Question {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  inputFormat  String
+  outputFormat String
+  constraints  String
+  sampleInput  String
+  sampleOutput String
+  difficulty   String   // Easy, Medium, Hard
+  languages    String   // Comma-separated: python,c,cpp,java
+  testCases    TestCase[]
+  solutions     Solution[]
+  exams         QuestionOnExam[]
+}
+
+model Solution {
+  id           String   @id @default(cuid())
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  language     String
+  code         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  @@unique([questionId, language])
+}
+
+model TestCase {
+  id          String   @id @default(cuid())
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  input       String
+  expectedOutput String
+  isHidden    Boolean  @default(false)
+}
+
+model Exam {
+  id           String           @id @default(cuid())
+  name         String
+  organizerId  String
+  organizer    Organizer        @relation(fields: [organizerId], references: [id])
+  levels       ExamLevel[]
+  participants ParticipantExam[]
+}
+
+model ExamLevel {
+  id           String   @id @default(cuid())
+  examId       String
+  exam         Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  levelNumber  Int
+  accessCode   String   @unique
+  timeLimit    Int      // Minutes
+  questions    QuestionOnExam[]
+}
+
+model QuestionOnExam {
+  questionId  String
+  examLevelId String
+  question    Question  @relation(fields: [questionId], references: [id])
+  examLevel   ExamLevel @relation(fields: [examLevelId], references: [id], onDelete: Cascade)
+  @@id([questionId, examLevelId])
+}
+
+model ParticipantExam {
+  participantId String
+  examId        String
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  exam          Exam        @relation(fields: [examId], references: [id], onDelete: Cascade)
+  @@id([participantId, examId])
+}
+
+model Submission {
+  id            String      @id @default(cuid())
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  questionId    String
+  levelNumber   Int
+  code          String
+  language      String
+  status        String      // PENDING, PASSED, FAILED
+  score         Int
+  timeTaken     Int         // Seconds
+  createdAt     DateTime    @default(now())
+}
