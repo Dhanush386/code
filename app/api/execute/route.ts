@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 const PUBLIC_JUDGE0_URL = 'https://ce.judge0.com/submissions?base64_encoded=false&wait=true';
