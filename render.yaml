@@ -11,4 +11,3 @@ services:
       - key: PRISMA_CLIENT_ENGINE_TYPE
         value: library
       - key: DATABASE_URL
-        sync: false # Set manually in Render Dashboard
