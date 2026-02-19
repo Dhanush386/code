@@ -792,36 +792,36 @@ function ContestContent() {
                     </motion.div>
                 )}
                 {/* Time Expired Modal */}
-                <AnimatePresence>
-                    {showTimeUpModal && (
+                {showTimeUpModal && (
+                    <motion.div
+                        key="timeup-modal"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-950/60 backdrop-blur-xl"
+                    >
                         <motion.div
-                            key="timeup-modal"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-950/60 backdrop-blur-xl"
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-amber-500 shadow-2xl shadow-amber-500/20"
                         >
-                            <motion.div
-                                initial={{ scale: 0.9, y: 20 }}
-                                animate={{ scale: 1, y: 0 }}
-                                className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-amber-500 shadow-2xl shadow-amber-500/20"
+                            <div className="inline-flex p-6 bg-amber-50 text-amber-600 rounded-[2rem] border border-amber-100 mb-8 animate-pulse">
+                                <Clock size={60} />
+                            </div>
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Phase Time Expired</h2>
+                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                                The relay window for this node has closed. You must now synchronize with the next level.
+                            </p>
+                            <button
+                                onClick={() => router.push('/participant/exam-entry')}
+                                className="w-full bg-amber-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-amber-700 active:scale-95 transition-all shadow-xl shadow-amber-200 flex items-center justify-center gap-3"
                             >
-                                <div className="inline-flex p-6 bg-amber-50 text-amber-600 rounded-[2rem] border border-amber-100 mb-8 animate-pulse">
-                                    <Clock size={60} />
-                                </div>
-                                <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Phase Time Expired</h2>
-                                <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
-                                    The relay window for this node has closed. You must now synchronize with the next level.
-                                </p>
-                                <button
-                                    onClick={() => router.push('/participant/exam-entry')}
-                                    className="w-full bg-amber-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-amber-700 active:scale-95 transition-all shadow-xl shadow-amber-200 flex items-center justify-center gap-3"
-                                >
-                                    Re-initialize Connection <ArrowRight size={20} />
-                                </button>
-                            </motion.div>
+                                Re-initialize Connection <ArrowRight size={20} />
+                            </button>
                         </motion.div>
-                    )}
-                </AnimatePresence>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
