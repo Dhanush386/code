@@ -42,6 +42,7 @@ model Question {
   sampleInput  String
   sampleOutput String
   difficulty   String   // Easy, Medium, Hard
+  points       Int      @default(10)
   languages    String   // Comma-separated: python,c,cpp,java
   testCases    TestCase[]
   solutions     Solution[]

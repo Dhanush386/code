@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
             sampleInput,
             sampleOutput,
             difficulty,
+            points,
             languages,
             testCases // [{ input, expectedOutput, isHidden }]
         } = body;
@@ -27,6 +28,7 @@ export async function POST(req: NextRequest) {
                 sampleInput,
                 sampleOutput,
                 difficulty,
+                points: points ? parseInt(points) : 10,
                 languages,
                 testCases: {
                     create: testCases || []

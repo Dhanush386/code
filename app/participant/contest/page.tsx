@@ -341,7 +341,8 @@ function ContestContent() {
             }
 
             setPassCount(passed);
-            const questScore = tCount > 0 ? Math.round((passed / tCount) * 100) : 0;
+            const totalMarks = question.points || 10;
+            const questScore = tCount > 0 ? Math.round((passed / tCount) * totalMarks) : 0;
             setLastSubmissionScore(questScore);
 
             // Persist to DB

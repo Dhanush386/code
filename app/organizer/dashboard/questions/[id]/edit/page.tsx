@@ -39,6 +39,7 @@ export default function EditQuestion() {
         sampleInput: '',
         sampleOutput: '',
         difficulty: 'Easy',
+        points: 0,
         selectedLanguages: ['python'],
         testCases: [] as { id: any, input: string, expectedOutput: string, isHidden: boolean }[],
     });
@@ -59,6 +60,7 @@ export default function EditQuestion() {
                     sampleInput: data.sampleInput,
                     sampleOutput: data.sampleOutput,
                     difficulty: data.difficulty,
+                    points: data.points || 10,
                     selectedLanguages: data.languages.split(','),
                     testCases: data.testCases.map((tc: any) => ({
                         ...tc,
@@ -236,8 +238,19 @@ export default function EditQuestion() {
                                     >
                                         {lang === 'cpp' ? 'C++' : lang.toUpperCase()}
                                     </button>
-                                ))}
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-[0.2em] italic">Points allocation</label>
+                            <input
+                                type="number"
+                                value={formData.points}
+                                onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value) || 0 })}
+                                className="w-full px-6 py-3 bg-gray-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-blue-500 transition-all outline-none font-black text-gray-800 italic"
+                                placeholder="10"
+                                min="0"
+                            />
                         </div>
                     </div>
                 </section>

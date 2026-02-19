@@ -34,6 +34,7 @@ export default function NewQuestion() {
         sampleInput: '',
         sampleOutput: '',
         difficulty: 'Easy',
+        points: 10,
         selectedLanguages: ['python', 'c', 'cpp', 'java'],
         testCases: [
             { id: Date.now(), input: '', expectedOutput: '', isHidden: false }
