@@ -20,7 +20,8 @@ import {
     LogOut,
     Sparkles,
     Moon,
-    Sun
+    Sun,
+    ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
