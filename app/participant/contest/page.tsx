@@ -521,206 +521,205 @@ function ContestContent() {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Right Panel: Editor */}
-            <div className="w-1/2 flex flex-col bg-white border-l border-gray-100">
-                {/* Editor Toolbar */}
-                <div className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-6">
-                    <div className="flex gap-1 bg-gray-50 p-1 rounded-xl border border-gray-100">
-                        {(question.allowedLanguages || ['python']).map((lang: string) => (
+                {/* Right Panel: Editor */}
+                <div className="w-1/2 flex flex-col bg-white border-l border-gray-100 h-full overflow-hidden">
+                    {/* Editor Toolbar */}
+                    <div className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-6">
+                        <div className="flex gap-1 bg-gray-50 p-1 rounded-xl border border-gray-100">
+                            {(question.allowedLanguages || ['python']).map((lang: string) => (
+                                <button
+                                    key={lang}
+                                    onClick={() => setSelectedLanguage(lang)}
+                                    className={`px-4 py-1.5 rounded-lg text-[10px] font-black italic uppercase tracking-widest transition-all ${selectedLanguage === lang ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'
+                                        }`}
+                                >
+                                    {lang === 'cpp' ? 'C++' : lang}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex items-center gap-2">
                             <button
-                                key={lang}
-                                onClick={() => setSelectedLanguage(lang)}
-                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black italic uppercase tracking-widest transition-all ${selectedLanguage === lang ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'
-                                    }`}
+                                onClick={() => setEditorTheme(prev => prev === 'vs' ? 'vs-dark' : 'vs')}
+                                className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all border border-transparent hover:border-indigo-100 group"
+                                title={editorTheme === 'vs' ? "Switch to Dark Node" : "Switch to Light Node"}
                             >
-                                {lang === 'cpp' ? 'C++' : lang}
+                                {editorTheme === 'vs' ? <Moon size={18} /> : <Sun size={18} />}
                             </button>
-                        ))}
+
+                            <button className="text-gray-400 hover:text-indigo-600 transition-colors p-2">
+                                <Settings size={18} />
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setEditorTheme(prev => prev === 'vs' ? 'vs-dark' : 'vs')}
-                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all border border-transparent hover:border-indigo-100 group"
-                            title={editorTheme === 'vs' ? "Switch to Dark Node" : "Switch to Light Node"}
-                        >
-                            {editorTheme === 'vs' ? <Moon size={18} /> : <Sun size={18} />}
-                        </button>
-
-                        <button className="text-gray-400 hover:text-indigo-600 transition-colors p-2">
-                            <Settings size={18} />
-                        </button>
-                    </div>
-                </div>
-
-                <div className="flex-1 relative flex flex-col overflow-hidden">
-                    <div
-                        className={`transition-all duration-500 ${runResult ? 'h-1/2' : 'h-full'}`}
-                        onPaste={(e) => {
-                            e.preventDefault();
-                            alert("PASTE DETECTED: Manual input required for security protocols.");
-                        }}
-                    >
-                        <Editor
-                            height="100%"
-                            defaultLanguage="python"
-                            language={selectedLanguage}
-                            theme={editorTheme}
-                            value={codeValue}
-                            onChange={handleCodeChange}
-                            options={{
-                                fontSize: 16,
-                                fontWeight: 'bold',
-                                fontFamily: 'JetBrains Mono, Menlo, monospace',
-                                minimap: { enabled: false },
-                                scrollBeyondLastLine: false,
-                                lineNumbers: 'on',
-                                padding: { top: 20 },
-                                smoothScrolling: true,
-                                cursorSmoothCaretAnimation: "on"
+                    <div className="flex-1 relative flex flex-col overflow-hidden">
+                        <div
+                            className={`transition-all duration-500 ${runResult ? 'h-1/2' : 'h-full'}`}
+                            onPaste={(e) => {
+                                e.preventDefault();
+                                alert("PASTE DETECTED: Manual input required for security protocols.");
                             }}
-                        />
-                    </div>
+                        >
+                            <Editor
+                                height="100%"
+                                defaultLanguage="python"
+                                language={selectedLanguage}
+                                theme={editorTheme}
+                                value={codeValue}
+                                onChange={handleCodeChange}
+                                options={{
+                                    fontSize: 16,
+                                    fontWeight: 'bold',
+                                    fontFamily: 'JetBrains Mono, Menlo, monospace',
+                                    minimap: { enabled: false },
+                                    scrollBeyondLastLine: false,
+                                    lineNumbers: 'on',
+                                    padding: { top: 20 },
+                                    smoothScrolling: true,
+                                    cursorSmoothCaretAnimation: "on"
+                                }}
+                            />
+                        </div>
 
-                    {/* Overlays and Run Results */}
-                    <AnimatePresence>
-                        {runResult && (
-                            <motion.div
-                                key="run-result"
-                                initial={{ height: 0 }}
-                                animate={{ height: '50%' }}
-                                exit={{ height: 0 }}
-                                className="bg-white border-t-4 border-indigo-500 overflow-hidden flex flex-col"
-                            >
-                                <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                                    <div className="flex items-center gap-4">
-                                        <h4 className="text-[10px] font-black italic uppercase tracking-widest text-gray-950 flex items-center gap-2">
-                                            <Terminal size={14} /> Execution Result
-                                        </h4>
-                                        <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-2 ${runResult.isPassed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
-                                            {runResult.isPassed ? 'PASSED (STABLE)' : 'FAILED (DEGRADED)'}
+                        {/* Overlays and Run Results */}
+                        <AnimatePresence>
+                            {runResult && (
+                                <motion.div
+                                    key="run-result"
+                                    initial={{ height: 0 }}
+                                    animate={{ height: '50%' }}
+                                    exit={{ height: 0 }}
+                                    className="bg-white border-t-4 border-indigo-500 overflow-hidden flex flex-col"
+                                >
+                                    <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                                        <div className="flex items-center gap-4">
+                                            <h4 className="text-[10px] font-black italic uppercase tracking-widest text-gray-950 flex items-center gap-2">
+                                                <Terminal size={14} /> Execution Result
+                                            </h4>
+                                            <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-2 ${runResult.isPassed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
+                                                {runResult.isPassed ? 'PASSED (STABLE)' : 'FAILED (DEGRADED)'}
+                                            </div>
+                                        </div>
+                                        <button onClick={() => setRunResult(null)} className="text-gray-400 hover:text-gray-600 font-black text-xs uppercase italic">Close</button>
+                                    </div>
+                                    <div className="flex-1 grid grid-cols-2 gap-px bg-gray-100 p-px">
+                                        <div className="bg-white p-6 flex flex-col min-w-0">
+                                            <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest italic mb-3">Your Output</p>
+                                            <pre className="flex-1 bg-gray-50 rounded-xl p-4 font-mono text-sm text-gray-800 overflow-auto border border-gray-100 italic font-bold">
+                                                {runResult.userOutput}
+                                            </pre>
+                                        </div>
+                                        <div className="bg-white p-6 flex flex-col min-w-0">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic mb-3">Expected Output</p>
+                                            <pre className="flex-1 bg-gray-50 rounded-xl p-4 font-mono text-sm text-gray-800 overflow-auto border border-gray-100 italic font-bold">
+                                                {runResult.expectedOutput}
+                                            </pre>
                                         </div>
                                     </div>
-                                    <button onClick={() => setRunResult(null)} className="text-gray-400 hover:text-gray-600 font-black text-xs uppercase italic">Close</button>
-                                </div>
-                                <div className="flex-1 grid grid-cols-2 gap-px bg-gray-100 p-px">
-                                    <div className="bg-white p-6 flex flex-col min-w-0">
-                                        <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest italic mb-3">Your Output</p>
-                                        <pre className="flex-1 bg-gray-50 rounded-xl p-4 font-mono text-sm text-gray-800 overflow-auto border border-gray-100 italic font-bold">
-                                            {runResult.userOutput}
-                                        </pre>
+                                </motion.div>
+                            )}
+
+                            {isSubmitting && (
+                                <motion.div
+                                    key="submitting-overlay"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50"
+                                >
+                                    <Loader2 className="text-indigo-500 animate-spin mb-6" size={60} />
+                                    <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Evaluating Vector...</h3>
+                                    <p className="text-blue-400 font-bold italic text-xs uppercase tracking-widest mt-2">{submissionProgress}</p>
+                                </motion.div>
+                            )}
+
+                            {isRunning && (
+                                <motion.div
+                                    key="running-overlay"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50"
+                                >
+                                    <Loader2 className="text-emerald-500 animate-spin mb-6" size={60} />
+                                    <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Running Case...</h3>
+                                </motion.div>
+                            )}
+
+                            {submissionResult === 'success' && (
+                                <motion.div
+                                    key="success-overlay"
+                                    initial={{ y: 50, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-3xl p-8 border-4 border-emerald-500 shadow-2xl shadow-emerald-500/20 z-[60] flex items-center gap-6"
+                                >
+                                    <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl">
+                                        <CheckCircle2 size={40} />
                                     </div>
-                                    <div className="bg-white p-6 flex flex-col min-w-0">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic mb-3">Expected Output</p>
-                                        <pre className="flex-1 bg-gray-50 rounded-xl p-4 font-mono text-sm text-gray-800 overflow-auto border border-gray-100 italic font-bold">
-                                            {runResult.expectedOutput}
-                                        </pre>
+                                    <div>
+                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">All Signals Green (100/100)</h3>
+                                        <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">Perfect signature match. Access granted to next node.</p>
                                     </div>
-                                </div>
-                            </motion.div>
-                        )}
+                                </motion.div>
+                            )}
 
-                        {isSubmitting && (
-                            <motion.div
-                                key="submitting-overlay"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50"
-                            >
-                                <Loader2 className="text-indigo-500 animate-spin mb-6" size={60} />
-                                <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Evaluating Vector...</h3>
-                                <p className="text-blue-400 font-bold italic text-xs uppercase tracking-widest mt-2">{submissionProgress}</p>
-                            </motion.div>
-                        )}
+                            {submissionResult === 'partial' && (
+                                <motion.div
+                                    key="partial-overlay"
+                                    initial={{ y: 50, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-3xl p-8 border-4 border-amber-500 shadow-2xl shadow-amber-500/20 z-[60] flex items-center gap-6"
+                                >
+                                    <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl">
+                                        <Zap size={40} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Partial Signal ({lastSubmissionScore}/100)</h3>
+                                        <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">{passCount}/{totalTests} protocols validated. Correction required for full sync.</p>
+                                    </div>
+                                    <button onClick={() => setSubmissionResult(null)} className="ml-4 p-2 text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                                </motion.div>
+                            )}
 
-                        {isRunning && (
-                            <motion.div
-                                key="running-overlay"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50"
-                            >
-                                <Loader2 className="text-emerald-500 animate-spin mb-6" size={60} />
-                                <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Running Case...</h3>
-                            </motion.div>
-                        )}
-
-                        {submissionResult === 'success' && (
-                            <motion.div
-                                key="success-overlay"
-                                initial={{ y: 50, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-3xl p-8 border-4 border-emerald-500 shadow-2xl shadow-emerald-500/20 z-[60] flex items-center gap-6"
-                            >
-                                <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl">
-                                    <CheckCircle2 size={40} />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">All Signals Green (100/100)</h3>
-                                    <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">Perfect signature match. Access granted to next node.</p>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {submissionResult === 'partial' && (
-                            <motion.div
-                                key="partial-overlay"
-                                initial={{ y: 50, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-3xl p-8 border-4 border-amber-500 shadow-2xl shadow-amber-500/20 z-[60] flex items-center gap-6"
-                            >
-                                <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl">
-                                    <Zap size={40} />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Partial Signal ({lastSubmissionScore}/100)</h3>
-                                    <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">{passCount}/{totalTests} protocols validated. Correction required for full sync.</p>
-                                </div>
-                                <button onClick={() => setSubmissionResult(null)} className="ml-4 p-2 text-gray-400 hover:text-gray-600"><X size={20} /></button>
-                            </motion.div>
-                        )}
-
-                        {submissionResult === 'failure' && (
-                            <motion.div
-                                key="failure-overlay"
-                                initial={{ y: 50, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-3xl p-8 border-4 border-red-500 shadow-2xl shadow-red-500/20 z-[60] flex items-center gap-6"
-                            >
-                                <div className="p-4 bg-red-50 text-red-600 rounded-2xl">
-                                    <AlertTriangle size={40} />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Signal Failed (0/100)</h3>
-                                    <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">No matching frequencies detected. Trace logic and retry.</p>
-                                </div>
-                                <button onClick={() => setSubmissionResult(null)} className="ml-4 p-2 text-gray-400 hover:text-gray-600"><X size={20} /></button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-
-                <div className="p-8 bg-white border-t border-gray-100 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={handleRun}
-                            disabled={isRunning || isSubmitting}
-                            className="px-6 py-3 bg-emerald-400 text-emerald-950 rounded-2xl font-black italic uppercase tracking-widest text-xs border-2 border-emerald-300 hover:bg-emerald-500 transition-all disabled:opacity-50 shadow-md shadow-emerald-100"
-                        >
-                            {isRunning ? 'Executing...' : 'Run'}
-                        </button>
+                            {submissionResult === 'failure' && (
+                                <motion.div
+                                    key="failure-overlay"
+                                    initial={{ y: 50, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-3xl p-8 border-4 border-red-500 shadow-2xl shadow-red-500/20 z-[60] flex items-center gap-6"
+                                >
+                                    <div className="p-4 bg-red-50 text-red-600 rounded-2xl">
+                                        <AlertTriangle size={40} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Signal Failed (0/100)</h3>
+                                        <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">No matching frequencies detected. Trace logic and retry.</p>
+                                    </div>
+                                    <button onClick={() => setSubmissionResult(null)} className="ml-4 p-2 text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
-                    <button
-                        onClick={handleSubmit}
-                        className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black italic uppercase tracking-widest text-sm hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-3 shadow-xl shadow-indigo-900/50"
-                    >
-                        Submit <Send size={18} />
-                    </button>
+                    <div className="p-8 bg-white border-t border-gray-100 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={handleRun}
+                                disabled={isRunning || isSubmitting}
+                                className="px-6 py-3 bg-emerald-400 text-emerald-950 rounded-2xl font-black italic uppercase tracking-widest text-xs border-2 border-emerald-300 hover:bg-emerald-500 transition-all disabled:opacity-50 shadow-md shadow-emerald-100"
+                            >
+                                {isRunning ? 'Executing...' : 'Run'}
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={handleSubmit}
+                            className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black italic uppercase tracking-widest text-sm hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-3 shadow-xl shadow-indigo-900/50"
+                        >
+                        </button>
+                    </div>
                 </div>
             </div>
 
