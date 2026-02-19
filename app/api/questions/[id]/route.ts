@@ -90,6 +90,7 @@ export async function DELETE(
         });
         return NextResponse.json({ success: true });
     } catch (error: any) {
+        console.error('API Error (/api/questions/[id] DELETE):', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

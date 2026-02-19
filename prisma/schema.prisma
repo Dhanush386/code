@@ -90,7 +90,7 @@ model ExamLevel {
 model QuestionOnExam {
   questionId  String
   examLevelId String
-  question    Question  @relation(fields: [questionId], references: [id])
+  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
   examLevel   ExamLevel @relation(fields: [examLevelId], references: [id], onDelete: Cascade)
   @@id([questionId, examLevelId])
 }
@@ -108,6 +108,7 @@ model Submission {
   participantId String
   participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
   questionId    String
+  question      Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
   levelNumber   Int
   code          String
   language      String
