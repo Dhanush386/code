@@ -24,16 +24,22 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        // 2. Check if this is a first-time pass for this question
-        const existingPassedSubmission = await prisma.submission.findFirst({
+        // 2. Find previous best score for this question
+        const submissions = await prisma.submission.findMany({
             where: {
                 participantId,
-                questionId,
-                status: 'PASSED'
-            }
+                questionId
+            },
+            orderBy: { score: 'desc' },
+            take: 2 // We already created the current one, so we want the 2nd best if it exists
         });
 
-        // 3. Update participant score and level ONLY if not already passed
+        // The current submission is already in the DB (created at step 1)
+        // So we filter it out to find the best PREVIOUS score
+        const previousBestSubmission = submissions.find((s: any) => s.id !== submission.id);
+        const previousBestScore = previousBestSubmission ? previousBestSubmission.score : 0;
+
+        // 3. Update participant score and level
         const participant = await prisma.participant.findUnique({
             where: { id: participantId }
         });
@@ -42,35 +48,26 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Participant not found' }, { status: 404 });
         }
 
-        // If this is a first-time pass, update score and level
-        // (Note: existingPassedSubmission is null if this is the first pass being recorded right now,
-        // but wait, we already created the record above at step 1!
-        // So we should check if there are OTHER passed submissions.)
+        // Calculate score gain (new score - previous best score)
+        const scoreGain = Math.max(0, score - previousBestScore);
 
-        const otherPassedSubmissions = await prisma.submission.findMany({
-            where: {
-                participantId,
-                questionId,
-                status: 'PASSED',
-                id: { not: submission.id }
-            }
-        });
+        let updateData: any = {
+            score: participant.score + scoreGain,
+            totalTime: participant.totalTime + timeTaken
+        };
 
-        const isDuplicatePass = otherPassedSubmissions.length > 0;
-        let updatedParticipant = participant;
-
-        if (isPassed && !isDuplicatePass) {
-            updatedParticipant = await prisma.participant.update({
-                where: { id: participantId },
-                data: {
-                    score: participant.score + score,
-                    totalTime: participant.totalTime + timeTaken,
-                    currentLevel: participant.currentLevel === levelNumber
-                        ? levelNumber + 1
-                        : participant.currentLevel
-                }
-            });
+        // Only progress level if all test cases passed for the FIRST time
+        const alreadyPassed = submissions.some((s: any) => s.status === 'PASSED' && s.id !== submission.id);
+        if (isPassed && !alreadyPassed) {
+            updateData.currentLevel = participant.currentLevel === levelNumber
+                ? levelNumber + 1
+                : participant.currentLevel;
         }
+
+        const updatedParticipant = await prisma.participant.update({
+            where: { id: participantId },
+            data: updateData
+        });
 
         return NextResponse.json({
             success: true,
