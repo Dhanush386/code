@@ -238,6 +238,7 @@ export default function EditQuestion() {
                                     >
                                         {lang === 'cpp' ? 'C++' : lang.toUpperCase()}
                                     </button>
+                                ))}
                             </div>
                         </div>
 
