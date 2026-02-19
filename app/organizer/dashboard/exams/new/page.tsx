@@ -57,16 +57,28 @@ export default function NewExam() {
 
     const handleSubmit = async () => {
         if (!examName) return alert('Please enter an exam name');
+
+        // Get organizer from localStorage
+        const organizerStr = localStorage.getItem('organizer');
+        if (!organizerStr) return alert('Session expired. Please login again.');
+        const organizer = JSON.parse(organizerStr);
+
         setLoading(true);
 
         try {
+            // Clean levels to remove any NaN values from timeLimit
+            const cleanedLevels = levels.map(level => ({
+                ...level,
+                timeLimit: isNaN(level.timeLimit) ? 30 : level.timeLimit
+            }));
+
             const res = await fetch('/api/exams', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: examName,
-                    organizerId: 'cmlqwy5fv0000p45aktv3iud5', // Valid seeded ID
-                    levels: levels
+                    organizerId: organizer.id,
+                    levels: cleanedLevels
                 })
             });
 
@@ -170,8 +182,9 @@ export default function NewExam() {
                                             type="number"
                                             value={level.timeLimit}
                                             onChange={(e) => {
+                                                const val = parseInt(e.target.value);
                                                 const newLevels = [...levels];
-                                                newLevels[idx].timeLimit = parseInt(e.target.value);
+                                                newLevels[idx].timeLimit = isNaN(val) ? 0 : val;
                                                 setLevels(newLevels);
                                             }}
                                             className="w-full bg-gray-50 border-2 border-transparent rounded-xl px-4 py-3 font-bold text-gray-800 italic outline-none focus:border-blue-500 transition-all"

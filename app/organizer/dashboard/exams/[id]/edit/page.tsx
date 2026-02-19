@@ -213,8 +213,9 @@ export default function EditExam({ params }: { params: Promise<{ id: string }> }
                                             type="number"
                                             value={level.timeLimit}
                                             onChange={(e) => {
+                                                const val = parseInt(e.target.value);
                                                 const newLevels = [...levels];
-                                                newLevels[idx].timeLimit = parseInt(e.target.value);
+                                                newLevels[idx].timeLimit = isNaN(val) ? 0 : val;
                                                 setLevels(newLevels);
                                             }}
                                             className="w-full bg-gray-50 border-2 border-transparent rounded-xl px-4 py-3 font-bold text-gray-800 italic outline-none focus:border-blue-500 transition-all"
