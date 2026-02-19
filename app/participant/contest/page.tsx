@@ -723,41 +723,40 @@ function ContestContent() {
                     </button>
                 </div>
             </div>
-        </div>
 
-            {/* Cheating Warning Modal */ }
-    <AnimatePresence>
-        {showWarning && (
-            <motion.div
-                key="modal"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-red-950/40 backdrop-blur-md"
-            >
-                <motion.div
-                    initial={{ scale: 0.9, y: 20 }}
-                    animate={{ scale: 1, y: 0 }}
-                    className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-red-500 shadow-2xl shadow-red-500/20"
-                >
-                    <div className="inline-flex p-6 bg-red-50 text-red-600 rounded-[2rem] border border-red-100 mb-8 animate-bounce">
-                        <AlertTriangle size={60} />
-                    </div>
-                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Violation</h2>
-                    <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
-                        Critical Warning: Outside activity detected. Repeated violations ({violationCount}/3) will result in immediate disqualification.
-                    </p>
-                    <button
-                        onClick={() => setShowWarning(false)}
-                        className="w-full bg-red-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-red-700 active:scale-95 transition-all shadow-xl shadow-red-200"
+            {/* Cheating Warning Modal */}
+            <AnimatePresence>
+                {showWarning && (
+                    <motion.div
+                        key="modal"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-red-950/40 backdrop-blur-md"
                     >
-                        I Acknowledge & Return
-                    </button>
-                </motion.div>
-            </motion.div>
-        )}
-    </AnimatePresence>
-        </div >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-red-500 shadow-2xl shadow-red-500/20"
+                        >
+                            <div className="inline-flex p-6 bg-red-50 text-red-600 rounded-[2rem] border border-red-100 mb-8 animate-bounce">
+                                <AlertTriangle size={60} />
+                            </div>
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Violation</h2>
+                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                                Critical Warning: Outside activity detected. Repeated violations ({violationCount}/3) will result in immediate disqualification.
+                            </p>
+                            <button
+                                onClick={() => setShowWarning(false)}
+                                className="w-full bg-red-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-red-700 active:scale-95 transition-all shadow-xl shadow-red-200"
+                            >
+                                I Acknowledge & Return
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }
 
