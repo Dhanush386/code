@@ -490,7 +490,7 @@ function ContestContent() {
                             {activeIndex === idx && (
                                 <motion.div
                                     layoutId="nav-active"
-                                    className="absolute -right-[43px] w-2 h-8 bg-indigo-600 rounded-l-full"
+                                    className="absolute -left-4 w-2 h-8 bg-indigo-600 rounded-r-full"
                                 />
                             )}
                             <div className="absolute left-full ml-4 px-3 py-1 bg-gray-900 text-white text-[10px] font-black italic uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
