@@ -46,6 +46,7 @@ model Question {
   testCases    TestCase[]
   solutions     Solution[]
   exams         QuestionOnExam[]
+  submissions   Submission[]
 }
 
 model Solution {
