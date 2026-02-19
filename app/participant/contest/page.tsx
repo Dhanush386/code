@@ -378,7 +378,7 @@ function ContestContent() {
             if (passed === tCount && tCount > 0) {
                 setSubmissionResult('success');
                 setTimeout(() => {
-                    alert(`ULTIMATE VICTORY! Score: ${questScore}/100. Level Unlocked.`);
+                    alert(`ULTIMATE VICTORY! Score: ${questScore}/${totalMarks}. Level Unlocked.`);
                     router.push('/participant/exam-entry');
                 }, 3000);
             } else if (passed > 0) {
@@ -659,7 +659,7 @@ function ContestContent() {
                                         <CheckCircle2 size={40} />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">All Signals Green (100/100)</h3>
+                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">All Signals Green ({question.points || 10}/{question.points || 10})</h3>
                                         <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">Perfect signature match. Access granted to next node.</p>
                                     </div>
                                 </motion.div>
@@ -676,7 +676,7 @@ function ContestContent() {
                                         <Zap size={40} />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Partial Signal ({lastSubmissionScore}/100)</h3>
+                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Partial Signal ({lastSubmissionScore}/{question.points || 10})</h3>
                                         <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">{passCount}/{totalTests} protocols validated. Correction required for full sync.</p>
                                     </div>
                                     <button onClick={() => setSubmissionResult(null)} className="ml-4 p-2 text-gray-400 hover:text-gray-600"><X size={20} /></button>
@@ -694,7 +694,7 @@ function ContestContent() {
                                         <AlertTriangle size={40} />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Signal Failed (0/100)</h3>
+                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Signal Failed (0/{question.points || 10})</h3>
                                         <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">No matching frequencies detected. Trace logic and retry.</p>
                                     </div>
                                     <button onClick={() => setSubmissionResult(null)} className="ml-4 p-2 text-gray-400 hover:text-gray-600"><X size={20} /></button>
