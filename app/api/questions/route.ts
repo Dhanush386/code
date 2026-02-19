@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
         const questions = await prisma.question.findMany({
             orderBy: { id: 'desc' },
@@ -54,6 +54,10 @@ export async function GET() {
         });
         return NextResponse.json(questions);
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error('API Error (/api/questions):', error);
+        return NextResponse.json({
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        }, { status: 500 });
     }
 }

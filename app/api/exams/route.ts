@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
         const exams = await prisma.exam.findMany({
             include: {
@@ -57,6 +57,10 @@ export async function GET() {
         });
         return NextResponse.json(exams);
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error('API Error (/api/exams):', error);
+        return NextResponse.json({
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        }, { status: 500 });
     }
 }
