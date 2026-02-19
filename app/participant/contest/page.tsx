@@ -56,134 +56,11 @@ function ContestContent() {
     const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
     const [codeValue, setCodeValue] = useState(BOILERPLATES.python);
 
-    // Track code per language locally
-    const [languageCodes, setLanguageCodes] = useState<Record<string, string>>(BOILERPLATES);
-
+    const [allQuestions, setAllQuestions] = useState<any[]>([]);
+    const [activeIndex, setActiveIndex] = useState(0);
     const [question, setQuestion] = useState<any>(null);
 
-    // Switch code when language changes
-    useEffect(() => {
-        setCodeValue(languageCodes[selectedLanguage] || BOILERPLATES[selectedLanguage] || '');
-    }, [selectedLanguage, languageCodes]);
-
-    // Update the local storage of code as the user types
-    const handleCodeChange = (val: string | undefined) => {
-        const newVal = val || '';
-        setCodeValue(newVal);
-        setLanguageCodes(prev => ({
-            ...prev,
-            [selectedLanguage]: newVal
-        }));
-
-        // Persistent Save
-        const participantData = localStorage.getItem('participant');
-        if (participantData && question?.id) {
-            const p = JSON.parse(participantData);
-            const draftKey = `codeRelay_draft_${p.id}_${question.id}_${selectedLanguage}`;
-            localStorage.setItem(draftKey, newVal);
-        }
-    };
-
-    useEffect(() => {
-        if (!code) return;
-
-        const fetchData = async () => {
-            try {
-                const res = await fetch('/api/participant/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ accessCode: code })
-                });
-
-                const level = await res.json();
-                if (!res.ok) throw new Error(level.error || 'Failed to initialize session');
-
-                if (level.questions && level.questions.length > 0) {
-                    const qData = level.questions[0].question;
-                    const visibleTestCases = qData.testCases?.filter((tc: any) => !tc.isHidden) || [];
-
-                    const allowedLanguages = qData.languages ? qData.languages.split(',').map((l: string) => l.trim()) : ['python'];
-
-                    setQuestion({
-                        ...qData,
-                        sampleInput: qData.sampleInput || visibleTestCases[0]?.input || '',
-                        sampleOutput: qData.sampleOutput || visibleTestCases[0]?.expectedOutput || '',
-                        difficulty: `LEVEL 0${level.levelNumber} - ${level.exam.name.toUpperCase()}`,
-                        allowedLanguages
-                    });
-
-                    setSelectedLanguage(allowedLanguages[0]);
-                    setCurrentLevel(level.levelNumber);
-                    setTimeRemaining(level.timeLimit * 60);
-                } else {
-                    throw new Error('No questions assigned to this level');
-                }
-                setLoading(false);
-            } catch (err: any) {
-                alert(err.message);
-                router.push('/participant/exam-entry');
-            }
-        };
-
-        fetchData();
-    }, [code, router]);
-
-    // Timer Logic
-    useEffect(() => {
-        if (timeRemaining <= 0) {
-            handleTimeUp();
-            return;
-        }
-        const timer = setInterval(() => {
-            setTimeRemaining(prev => prev - 1);
-        }, 1000);
-        return () => clearInterval(timer);
-    }, [timeRemaining]);
-
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const handleTimeUp = () => {
-        alert("Time Expired! Moving to next phase.");
-        router.push('/participant/exam-entry');
-    };
-
-    const handleLogout = () => {
-        if (confirm("Are you sure you want to logout? The timer will continue if you leave!")) {
-            localStorage.removeItem('participant');
-            localStorage.removeItem('activeExamCode');
-            router.push('/participant/login');
-        }
-    };
-
-    // Load initial stats
-    useEffect(() => {
-        const participantData = localStorage.getItem('participant');
-        if (participantData) {
-            const p = JSON.parse(participantData);
-            setTeamName(p.teamName || 'CONTESTANT');
-            setTotalScore(p.score || 0);
-
-            const fetchRealStats = async () => {
-                try {
-                    const res = await fetch(`/api/participant/profile/${p.id}`);
-                    if (res.ok) {
-                        const latest = await res.json();
-                        setTotalScore(latest.score || 0);
-                        localStorage.setItem('participant', JSON.stringify(latest));
-                    }
-                } catch (err) {
-                    console.error('Failed to sync server stats:', err);
-                }
-            };
-            fetchRealStats();
-        }
-    }, []);
-
-    // Load Draft logic
+    // Switch code when language or question changes
     useEffect(() => {
         if (!question?.id || !selectedLanguage) return;
 
@@ -195,276 +72,441 @@ function ContestContent() {
 
             if (savedDraft) {
                 setCodeValue(savedDraft);
-                setLanguageCodes(prev => ({
-                    ...prev,
-                    [selectedLanguage]: savedDraft
-                }));
+            } else {
+                setCodeValue(BOILERPLATES[selectedLanguage] || '');
             }
         }
-    }, [question?.id, selectedLanguage]);
+    }, [selectedLanguage, question?.id]);
 
-    // Anti-Cheat & Heartbeat Logic
-    useEffect(() => {
+    // Update the local storage of code as the user types
+    const handleCodeChange = (val: string | undefined) => {
+        const newVal = val || '';
+        setCodeValue(newVal);
+
+        // Persistent Save
         const participantData = localStorage.getItem('participant');
-        if (!participantData) {
-            router.push('/participant/login');
-            return;
+        if (participantData && question?.id) {
+            const p = JSON.parse(participantData);
+            const draftKey = `codeRelay_draft_${p.id}_${question.id}_${selectedLanguage}`;
+            localStorage.setItem(draftKey, newVal);
         }
+    };
 
-        const participant = JSON.parse(participantData);
+    // Persistent Save
+    const participantData = localStorage.getItem('participant');
+    if (participantData && question?.id) {
+        const p = JSON.parse(participantData);
+        const draftKey = `codeRelay_draft_${p.id}_${question.id}_${selectedLanguage}`;
+        localStorage.setItem(draftKey, newVal);
+    }
+};
 
-        // Initial heartbeat and mark as started
-        const sendHeartbeat = async () => {
-            try {
-                await fetch('/api/participant/heartbeat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ participantId: participant.id })
+useEffect(() => {
+    if (!code) return;
+
+    const fetchData = async () => {
+        try {
+            const res = await fetch('/api/participant/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accessCode: code })
+            });
+
+            const level = await res.json();
+            if (!res.ok) throw new Error(level.error || 'Failed to initialize session');
+
+            if (level.questions && level.questions.length > 0) {
+                const formattedQuestions = level.questions.map((lq: any) => {
+                    const qData = lq.question;
+                    const visibleTestCases = qData.testCases?.filter((tc: any) => !tc.isHidden) || [];
+                    const allowedLanguages = qData.languages ? qData.languages.split(',').map((l: string) => l.trim()) : ['python'];
+
+                    return {
+                        ...qData,
+                        sampleInput: qData.sampleInput || visibleTestCases[0]?.input || '',
+                        sampleOutput: qData.sampleOutput || visibleTestCases[0]?.expectedOutput || '',
+                        difficulty: `LEVEL 0${level.levelNumber} - ${level.exam.name.toUpperCase()}`,
+                        allowedLanguages
+                    };
                 });
-            } catch (error) {
-                console.error('Heartbeat failed:', error);
+
+                setAllQuestions(formattedQuestions);
+                setQuestion(formattedQuestions[0]);
+                setSelectedLanguage(formattedQuestions[0].allowedLanguages[0]);
+                setCurrentLevel(level.levelNumber);
+                setTimeRemaining(level.timeLimit * 60);
+            } else {
+                throw new Error('No questions assigned to this level');
             }
-        };
-
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'hidden') {
-                registerViolation("Window Switch Detected");
-            }
-        };
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Block Ctrl+V or Cmd+V (for Mac)
-            if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-                e.preventDefault();
-                alert("KEYBOARD PASTE BLOCKED: Manual input is mandatory for this relay.");
-            }
-        };
-
-        sendHeartbeat();
-        const interval = setInterval(sendHeartbeat, 30000); // 30s pulse
-
-        window.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-            clearInterval(interval);
-            window.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [router]); // Only run once on mount (and if router changes)
-
-    // Separate effect for violation enforcement to avoid side-effects during render
-    useEffect(() => {
-        if (violationCount >= 3) {
-            alert("AUTO-SUBMISSION TRIGGERED: Multiple violations detected.");
+            setLoading(false);
+        } catch (err: any) {
+            alert(err.message);
             router.push('/participant/exam-entry');
         }
-    }, [violationCount, router]);
+    };
 
-    const registerViolation = useCallback((msg: string) => {
-        console.log(`Violation: ${msg}`);
-        setViolationCount(prev => prev + 1);
-        setShowWarning(true);
-    }, []);
+    fetchData();
+}, [code, router]);
 
-    const handleRun = async () => {
-        setIsRunning(true);
-        setRunResult(null);
+// Timer Logic
+useEffect(() => {
+    if (timeRemaining <= 0) {
+        handleTimeUp();
+        return;
+    }
+    const timer = setInterval(() => {
+        setTimeRemaining(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+}, [timeRemaining]);
 
+const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+const handleTimeUp = () => {
+    alert("Time Expired! Moving to next phase.");
+    router.push('/participant/exam-entry');
+};
+
+const handleLogout = () => {
+    if (confirm("Are you sure you want to logout? The timer will continue if you leave!")) {
+        localStorage.removeItem('participant');
+        localStorage.removeItem('activeExamCode');
+        router.push('/participant/login');
+    }
+};
+
+// Load initial stats
+useEffect(() => {
+    const participantData = localStorage.getItem('participant');
+    if (participantData) {
+        const p = JSON.parse(participantData);
+        setTeamName(p.teamName || 'CONTESTANT');
+        setTotalScore(p.score || 0);
+
+        const fetchRealStats = async () => {
+            try {
+                const res = await fetch(`/api/participant/profile/${p.id}`);
+                if (res.ok) {
+                    const latest = await res.json();
+                    setTotalScore(latest.score || 0);
+                    localStorage.setItem('participant', JSON.stringify(latest));
+                }
+            } catch (err) {
+                console.error('Failed to sync server stats:', err);
+            }
+        };
+        fetchRealStats();
+    }
+}, []);
+
+// Load Draft logic
+const switchQuestion = (index: number) => {
+    if (index === activeIndex) return;
+    setActiveIndex(index);
+    setQuestion(allQuestions[index]);
+    setSubmissionResult(null);
+    setRunResult(null);
+
+    const nextQ = allQuestions[index];
+    if (!nextQ.allowedLanguages.includes(selectedLanguage)) {
+        setSelectedLanguage(nextQ.allowedLanguages[0]);
+    }
+};
+
+// Anti-Cheat & Heartbeat Logic
+useEffect(() => {
+    const participantData = localStorage.getItem('participant');
+    if (!participantData) {
+        router.push('/participant/login');
+        return;
+    }
+
+    const participant = JSON.parse(participantData);
+
+    // Initial heartbeat and mark as started
+    const sendHeartbeat = async () => {
         try {
+            await fetch('/api/participant/heartbeat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ participantId: participant.id })
+            });
+        } catch (error) {
+            console.error('Heartbeat failed:', error);
+        }
+    };
+
+    const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') {
+            registerViolation("Window Switch Detected");
+        }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        // Block Ctrl+V or Cmd+V (for Mac)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+            e.preventDefault();
+            alert("KEYBOARD PASTE BLOCKED: Manual input is mandatory for this relay.");
+        }
+    };
+
+    sendHeartbeat();
+    const interval = setInterval(sendHeartbeat, 30000); // 30s pulse
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+        clearInterval(interval);
+        window.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('keydown', handleKeyDown);
+    };
+}, [router]); // Only run once on mount (and if router changes)
+
+// Separate effect for violation enforcement to avoid side-effects during render
+useEffect(() => {
+    if (violationCount >= 3) {
+        alert("AUTO-SUBMISSION TRIGGERED: Multiple violations detected.");
+        router.push('/participant/exam-entry');
+    }
+}, [violationCount, router]);
+
+const registerViolation = useCallback((msg: string) => {
+    console.log(`Violation: ${msg}`);
+    setViolationCount(prev => prev + 1);
+    setShowWarning(true);
+}, []);
+
+const handleRun = async () => {
+    setIsRunning(true);
+    setRunResult(null);
+
+    try {
+        const res = await fetch('/api/execute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                source_code: codeValue,
+                language: selectedLanguage,
+                stdin: question.sampleInput || ''
+            })
+        });
+
+        const data = await res.json();
+        setIsRunning(false);
+
+        if (data.error) throw new Error(data.error);
+
+        const userOutput = data.stdout || data.stderr || data.compile_output || 'No output generated.';
+        const expected = question.sampleOutput.trim();
+        const isPassed = data.status?.id === 3 && (data.stdout?.trim() === expected);
+
+        setRunResult({
+            userOutput: userOutput.trim(),
+            expectedOutput: expected,
+            isPassed: isPassed
+        });
+    } catch (err: any) {
+        setIsRunning(false);
+        setRunResult({
+            userOutput: `Error: ${err.message}`,
+            expectedOutput: question.sampleOutput,
+            isPassed: false
+        });
+    }
+};
+
+const [submissionProgress, setSubmissionProgress] = useState('');
+
+const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmissionResult(null);
+    setSubmissionProgress('Preparing vectors...');
+
+    try {
+        const allTests = question.testCases || [];
+        const tCount = allTests.length;
+        setTotalTests(tCount);
+
+        let passed = 0;
+
+        // Execute each test case sequentially for real validation
+        for (let i = 0; i < allTests.length; i++) {
+            const tc = allTests[i];
+            setSubmissionProgress(`Auditing Matrix ${i + 1}/${tCount}...`);
             const res = await fetch('/api/execute', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     source_code: codeValue,
                     language: selectedLanguage,
-                    stdin: question.sampleInput || ''
+                    stdin: tc.input || ''
                 })
             });
 
             const data = await res.json();
-            setIsRunning(false);
-
-            if (data.error) throw new Error(data.error);
-
-            const userOutput = data.stdout || data.stderr || data.compile_output || 'No output generated.';
-            const expected = question.sampleOutput.trim();
-            const isPassed = data.status?.id === 3 && (data.stdout?.trim() === expected);
-
-            setRunResult({
-                userOutput: userOutput.trim(),
-                expectedOutput: expected,
-                isPassed: isPassed
-            });
-        } catch (err: any) {
-            setIsRunning(false);
-            setRunResult({
-                userOutput: `Error: ${err.message}`,
-                expectedOutput: question.sampleOutput,
-                isPassed: false
-            });
+            if (data.status?.id === 3 && data.stdout?.trim() === tc.expectedOutput?.trim()) {
+                passed++;
+            }
         }
-    };
 
-    const [submissionProgress, setSubmissionProgress] = useState('');
+        setPassCount(passed);
+        const totalMarks = question.points || 10;
+        const questScore = tCount > 0 ? Math.round((passed / tCount) * totalMarks) : 0;
+        setLastSubmissionScore(questScore);
 
-    const handleSubmit = async () => {
-        setIsSubmitting(true);
-        setSubmissionResult(null);
-        setSubmissionProgress('Preparing vectors...');
+        // Persist to DB
+        const participantData = localStorage.getItem('participant');
+        if (participantData) {
+            const participant = JSON.parse(participantData);
+            const subRes = await fetch('/api/participant/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    participantId: participant.id,
+                    questionId: question.id,
+                    score: questScore,
+                    levelNumber: currentLevel,
+                    timeTaken: 1800 - timeRemaining,
+                    isPassed: passed === tCount && tCount > 0,
+                    code: codeValue,
+                    language: selectedLanguage
+                })
+            });
 
-        try {
-            const allTests = question.testCases || [];
-            const tCount = allTests.length;
-            setTotalTests(tCount);
-
-            let passed = 0;
-
-            // Execute each test case sequentially for real validation
-            for (let i = 0; i < allTests.length; i++) {
-                const tc = allTests[i];
-                setSubmissionProgress(`Auditing Matrix ${i + 1}/${tCount}...`);
-                const res = await fetch('/api/execute', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        source_code: codeValue,
-                        language: selectedLanguage,
-                        stdin: tc.input || ''
-                    })
-                });
-
-                const data = await res.json();
-                if (data.status?.id === 3 && data.stdout?.trim() === tc.expectedOutput?.trim()) {
-                    passed++;
-                }
+            if (subRes.ok) {
+                const subData = await subRes.json();
+                setTotalScore(subData.score);
+                // Update local storage
+                const updatedP = { ...participant, score: subData.score };
+                localStorage.setItem('participant', JSON.stringify(updatedP));
             }
+        }
 
-            setPassCount(passed);
-            const totalMarks = question.points || 10;
-            const questScore = tCount > 0 ? Math.round((passed / tCount) * totalMarks) : 0;
-            setLastSubmissionScore(questScore);
+        setIsSubmitting(false);
 
-            // Persist to DB
-            const participantData = localStorage.getItem('participant');
-            if (participantData) {
-                const participant = JSON.parse(participantData);
-                const subRes = await fetch('/api/participant/submit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        participantId: participant.id,
-                        questionId: question.id,
-                        score: questScore,
-                        levelNumber: currentLevel,
-                        timeTaken: 1800 - timeRemaining,
-                        isPassed: passed === tCount && tCount > 0,
-                        code: codeValue,
-                        language: selectedLanguage
-                    })
-                });
-
-                if (subRes.ok) {
-                    const subData = await subRes.json();
-                    setTotalScore(subData.score);
-                    // Update local storage
-                    const updatedP = { ...participant, score: subData.score };
-                    localStorage.setItem('participant', JSON.stringify(updatedP));
-                }
-            }
-
-            setIsSubmitting(false);
-
-            if (passed === tCount && tCount > 0) {
-                setSubmissionResult('success');
-                setTimeout(() => {
-                    alert(`ULTIMATE VICTORY! Score: ${questScore}/${totalMarks}. Level Unlocked.`);
-                    router.push('/participant/exam-entry');
-                }, 3000);
-            } else if (passed > 0) {
-                setSubmissionResult('partial');
-            } else {
-                setSubmissionResult('failure');
-            }
-        } catch (err: any) {
-            setIsSubmitting(false);
+        if (passed === tCount && tCount > 0) {
+            setSubmissionResult('success');
+            setTimeout(() => {
+                alert(`ULTIMATE VICTORY! Score: ${questScore}/${totalMarks}. Level Unlocked.`);
+                router.push('/participant/exam-entry');
+            }, 3000);
+        } else if (passed > 0) {
+            setSubmissionResult('partial');
+        } else {
             setSubmissionResult('failure');
-            console.error('Submission error:', err);
         }
-    };
+    } catch (err: any) {
+        setIsSubmitting(false);
+        setSubmissionResult('failure');
+        console.error('Submission error:', err);
+    }
+};
 
-    if (loading || !question) {
-        return (
-            <div className="h-screen bg-white flex flex-col items-center justify-center">
-                <div className="flex flex-col items-center gap-6">
-                    <Loader2 className="animate-spin text-indigo-500" size={60} />
-                    <div className="text-center">
-                        <h2 className="text-2xl font-black italic tracking-tighter text-gray-950 uppercase">Syncing with Relay Node</h2>
-                        <p className="text-gray-400 font-bold italic text-xs uppercase tracking-widest mt-2">Initializing secure contest environment...</p>
-                    </div>
+if (loading || !question) {
+    return (
+        <div className="h-screen bg-white flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center gap-6">
+                <Loader2 className="animate-spin text-indigo-500" size={60} />
+                <div className="text-center">
+                    <h2 className="text-2xl font-black italic tracking-tighter text-gray-950 uppercase">Syncing with Relay Node</h2>
+                    <p className="text-gray-400 font-bold italic text-xs uppercase tracking-widest mt-2">Initializing secure contest environment...</p>
                 </div>
             </div>
-        );
-    }
+        </div>
+    );
+}
 
-    return (
-        <div
-            className="h-screen bg-gray-50 flex flex-col overflow-hidden font-sans select-none"
-            onContextMenu={(e) => e.preventDefault()}
-        >
-            {/* Header */}
-            <header className="bg-white border-b border-gray-100 flex items-center justify-between px-8 py-3">
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-indigo-600 p-1.5 rounded-lg text-white">
-                            <Zap size={18} fill="currentColor" />
-                        </div>
-                        <span className="font-black italic tracking-tighter text-gray-950 uppercase">Code Relay</span>
+return (
+    <div
+        className="h-screen bg-gray-50 flex flex-col overflow-hidden font-sans select-none"
+        onContextMenu={(e) => e.preventDefault()}
+    >
+        {/* Header */}
+        <header className="bg-white border-b border-gray-100 flex items-center justify-between px-8 py-3">
+            <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                    <div className="bg-indigo-600 p-1.5 rounded-lg text-white">
+                        <Zap size={18} fill="currentColor" />
                     </div>
-
-                    <div className="h-4 w-[1px] bg-gray-200" />
-
-                    <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black text-gray-400 italic uppercase tracking-widest">Contestant</span>
-                        <span className="font-bold italic text-gray-900 border-b-2 border-indigo-200">{teamName}</span>
-                    </div>
-
-                    <div className="h-4 w-[1px] bg-gray-200" />
-
-                    <div className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 shadow-sm">
-                        <Sparkles size={14} className="animate-pulse" />
-                        <span className="text-[10px] font-black italic uppercase tracking-widest">Score Cluster</span>
-                        <span className="text-sm font-black italic text-indigo-700 ml-1">{totalScore} PTS</span>
-                    </div>
+                    <span className="font-black italic tracking-tighter text-gray-950 uppercase">Code Relay</span>
                 </div>
 
-                <div className="flex items-center gap-8">
-                    {/* Violation Badge */}
-                    {violationCount > 0 && (
-                        <div className="flex items-center gap-2 px-4 py-1.5 bg-red-50 text-red-600 rounded-full border border-red-100 animate-pulse">
-                            <ShieldAlert size={14} />
-                            <span className="text-[10px] font-black italic uppercase tracking-widest">Protocol Warning {violationCount}/3</span>
-                        </div>
-                    )}
+                <div className="h-4 w-[1px] bg-gray-200" />
 
-                    <div className={`flex items-center gap-3 px-6 py-2 rounded-2xl border-2 transition-all ${timeRemaining < 300 ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-950 border-gray-800 text-white'}`}>
-                        <Clock size={18} className={timeRemaining < 300 ? 'animate-pulse' : ''} />
-                        <span className="text-xl font-mono font-black tracking-widest">{formatTime(timeRemaining)}</span>
+                <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-black text-gray-400 italic uppercase tracking-widest">Contestant</span>
+                    <span className="font-bold italic text-gray-900 border-b-2 border-indigo-200">{teamName}</span>
+                </div>
+
+                <div className="h-4 w-[1px] bg-gray-200" />
+
+                <div className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 shadow-sm">
+                    <Sparkles size={14} className="animate-pulse" />
+                    <span className="text-[10px] font-black italic uppercase tracking-widest">Score Cluster</span>
+                    <span className="text-sm font-black italic text-indigo-700 ml-1">{totalScore} PTS</span>
+                </div>
+            </div>
+
+            <div className="flex items-center gap-8">
+                {/* Violation Badge */}
+                {violationCount > 0 && (
+                    <div className="flex items-center gap-2 px-4 py-1.5 bg-red-50 text-red-600 rounded-full border border-red-100 animate-pulse">
+                        <ShieldAlert size={14} />
+                        <span className="text-[10px] font-black italic uppercase tracking-widest">Protocol Warning {violationCount}/3</span>
                     </div>
+                )}
 
-                    <div className="h-6 w-[1px] bg-gray-200" />
+                <div className={`flex items-center gap-3 px-6 py-2 rounded-2xl border-2 transition-all ${timeRemaining < 300 ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-950 border-gray-800 text-white'}`}>
+                    <Clock size={18} className={timeRemaining < 300 ? 'animate-pulse' : ''} />
+                    <span className="text-xl font-mono font-black tracking-widest">{formatTime(timeRemaining)}</span>
+                </div>
 
+                <div className="h-6 w-[1px] bg-gray-200" />
+
+                <button
+                    onClick={handleLogout}
+                    className="p-2.5 bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-gray-100 group"
+                    title="Logout Session"
+                >
+                    <LogOut size={20} className="group-hover:rotate-12 transition-transform" />
+                </button>
+            </div>
+        </header>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex overflow-hidden">
+            {/* Vertical Question Nav Rail */}
+            <div className="w-20 bg-white border-r border-gray-100 flex flex-col items-center py-10 gap-6 z-10 shadow-[4px_0_10px_-5px_rgba(0,0,0,0.05)]">
+                <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest italic mb-2">Node</span>
+                {allQuestions.map((q, idx) => (
                     <button
-                        onClick={handleLogout}
-                        className="p-2.5 bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-gray-100 group"
-                        title="Logout Session"
+                        key={q.id}
+                        onClick={() => switchQuestion(idx)}
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all group relative ${activeIndex === idx
+                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-110'
+                            : 'bg-gray-50 text-gray-400 hover:bg-indigo-50 hover:text-indigo-500'
+                            }`}
                     >
-                        <LogOut size={20} className="group-hover:rotate-12 transition-transform" />
+                        <span className="text-sm font-black italic">{idx + 1}</span>
+                        {activeIndex === idx && (
+                            <motion.div
+                                layoutId="nav-active"
+                                className="absolute -right-[43px] w-2 h-8 bg-indigo-600 rounded-l-full"
+                            />
+                        )}
+                        <div className="absolute left-full ml-4 px-3 py-1 bg-gray-900 text-white text-[10px] font-black italic uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                            {q.title}
+                        </div>
                     </button>
-                </div>
-            </header>
+                ))}
+            </div>
 
-            {/* Main Content Area */}
+            {/* Question and Editor Area */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Panel: Question */}
                 <div className="w-1/2 overflow-y-auto p-10 border-r border-gray-100 bg-white">
@@ -723,41 +765,42 @@ function ContestContent() {
                     </div>
                 </div>
             </div>
-
-            {/* Cheating Warning Modal */}
-            <AnimatePresence>
-                {showWarning && (
-                    <motion.div
-                        key="modal"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-red-950/40 backdrop-blur-md"
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
-                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-red-500 shadow-2xl shadow-red-500/20"
-                        >
-                            <div className="inline-flex p-6 bg-red-50 text-red-600 rounded-[2rem] border border-red-100 mb-8 animate-bounce">
-                                <AlertTriangle size={60} />
-                            </div>
-                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Violation</h2>
-                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
-                                Critical Warning: Outside activity detected. Repeated violations ({violationCount}/3) will result in immediate disqualification.
-                            </p>
-                            <button
-                                onClick={() => setShowWarning(false)}
-                                className="w-full bg-red-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-red-700 active:scale-95 transition-all shadow-xl shadow-red-200"
-                            >
-                                I Acknowledge & Return
-                            </button>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </div>
-    );
+
+        {/* Cheating Warning Modal */}
+        <AnimatePresence>
+            {showWarning && (
+                <motion.div
+                    key="modal"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-red-950/40 backdrop-blur-md"
+                >
+                    <motion.div
+                        initial={{ scale: 0.9, y: 20 }}
+                        animate={{ scale: 1, y: 0 }}
+                        className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-red-500 shadow-2xl shadow-red-500/20"
+                    >
+                        <div className="inline-flex p-6 bg-red-50 text-red-600 rounded-[2rem] border border-red-100 mb-8 animate-bounce">
+                            <AlertTriangle size={60} />
+                        </div>
+                        <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Violation</h2>
+                        <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                            Critical Warning: Outside activity detected. Repeated violations ({violationCount}/3) will result in immediate disqualification.
+                        </p>
+                        <button
+                            onClick={() => setShowWarning(false)}
+                            className="w-full bg-red-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-red-700 active:scale-95 transition-all shadow-xl shadow-red-200"
+                        >
+                            I Acknowledge & Return
+                        </button>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    </div>
+);
 }
 
 export default function ContestInterface() {
