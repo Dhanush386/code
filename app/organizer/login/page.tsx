@@ -10,8 +10,6 @@ export default function OrganizerLogin() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-
-    const [isRegistering, setIsRegistering] = useState(false);
     const [error, setError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -20,8 +18,7 @@ export default function OrganizerLogin() {
         setError('');
 
         try {
-            const endpoint = isRegistering ? '/api/organizer/register' : '/api/organizer/login';
-            const res = await fetch(endpoint, {
+            const res = await fetch('/api/organizer/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -30,13 +27,8 @@ export default function OrganizerLogin() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Authentication failed');
 
-            if (isRegistering) {
-                alert('Account created successfully! Please login.');
-                setIsRegistering(false);
-            } else {
-                localStorage.setItem('organizer', JSON.stringify(data));
-                router.push('/organizer/dashboard');
-            }
+            localStorage.setItem('organizer', JSON.stringify(data));
+            router.push('/organizer/dashboard');
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -56,8 +48,8 @@ export default function OrganizerLogin() {
                         <div className="inline-flex p-3 bg-white/10 rounded-2xl mb-4">
                             <Terminal size={32} />
                         </div>
-                        <h2 className="text-3xl font-bold italic tracking-tighter">
-                            {isRegistering ? 'CREATE ACCOUNT' : 'ORGANIZER PORTAL'}
+                        <h2 className="text-3xl font-bold italic tracking-tighter uppercase">
+                            ORGANIZER PORTAL
                         </h2>
                         <p className="text-blue-100 mt-2 font-medium italic">Insightophia - Code Relay</p>
                     </div>
@@ -106,32 +98,23 @@ export default function OrganizerLogin() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full ${isRegistering ? 'bg-blue-600' : 'bg-gray-950'} text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 disabled:active:scale-100 shadow-lg shadow-gray-200`}
+                            className={`w-full bg-gray-950 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 disabled:active:scale-100 shadow-lg shadow-gray-200`}
                         >
                             {loading ? <Loader2 className="animate-spin" size={20} /> : (
                                 <>
-                                    {isRegistering ? 'Create Account' : 'Enter Dashboard'} <ArrowRight size={20} />
+                                    Enter Dashboard <ArrowRight size={20} />
                                 </>
                             )}
                         </button>
 
-                        <div className="text-center space-y-4">
+                        <div className="text-center">
                             <button
                                 type="button"
-                                onClick={() => setIsRegistering(!isRegistering)}
-                                className="text-xs font-black text-blue-600 hover:text-blue-700 transition-colors tracking-widest uppercase italic"
+                                onClick={() => router.push('/')}
+                                className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors tracking-tight uppercase italic"
                             >
-                                {isRegistering ? 'Already have an account? Login' : 'Need an account? Register'}
+                                Back to Home
                             </button>
-                            <div>
-                                <button
-                                    type="button"
-                                    onClick={() => router.push('/')}
-                                    className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors tracking-tight uppercase italic"
-                                >
-                                    Back to Home
-                                </button>
-                            </div>
                         </div>
                     </form>
                 </div>
