@@ -245,11 +245,11 @@ export default function NewExam() {
                                     <button
                                         key={q.id}
                                         onClick={() => {
-                                            // For simplicity, always add to level 1 for now if not assigned, or remove if assigned
                                             if (levelIdx !== -1) {
                                                 toggleQuestionInLevel(levelIdx, q.id);
                                             } else {
-                                                toggleQuestionInLevel(0, q.id);
+                                                const targetLevelIdx = q.difficulty === 'Easy' ? 0 : q.difficulty === 'Medium' ? 1 : 2;
+                                                toggleQuestionInLevel(targetLevelIdx, q.id);
                                             }
                                         }}
                                         className={`w-full text-left p-4 rounded-2xl border transition-all flex items-start gap-3 group ${levelIdx !== -1
