@@ -28,7 +28,11 @@ export async function GET(
 
         return NextResponse.json(exam);
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error(`API Error (/api/exams/[id]):`, error);
+        return NextResponse.json({
+            error: error.message,
+            stack: error.stack
+        }, { status: 500 });
     }
 }
 
@@ -44,7 +48,10 @@ export async function DELETE(
         return NextResponse.json({ success: true });
     } catch (error: any) {
         console.error('Exam deletion error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({
+            error: error.message,
+            stack: error.stack
+        }, { status: 500 });
     }
 }
 
@@ -98,6 +105,9 @@ export async function PATCH(
         return NextResponse.json(updatedExam);
     } catch (error: any) {
         console.error('Exam update error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({
+            error: error.message,
+            stack: error.stack
+        }, { status: 500 });
     }
 }
