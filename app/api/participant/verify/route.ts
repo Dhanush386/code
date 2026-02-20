@@ -42,8 +42,15 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid access code' }, { status: 404 });
         }
 
-        // Simplicity for this prototype: return all questions for this level
-        // In a more advanced version, we could handle persistent random assignment here
+        // Increment attempts on successful code entry
+        if (participantId) {
+            await prisma.participant.update({
+                where: { id: participantId },
+                data: { loginAttempts: { increment: 1 } }
+            });
+        }
+
+        // Return the level data
         return NextResponse.json(level);
     } catch (error: any) {
         console.error('Verify code error:', error);

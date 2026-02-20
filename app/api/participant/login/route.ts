@@ -17,20 +17,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Team not found. Please register first.' }, { status: 404 });
         }
 
-        // Check attempt limit
-        if (participant.loginAttempts >= 2) {
-            return NextResponse.json({
-                error: 'Maximum login attempts (2) reached. Please contact proctors if this is an error.'
-            }, { status: 403 });
-        }
-
-        // Update last active and increment attempts on login
+        // Update last active on login
         const updatedParticipant = await prisma.participant.update({
             where: { id: participant.id },
-            data: {
-                lastActive: new Date(),
-                loginAttempts: { increment: 1 }
-            }
+            data: { lastActive: new Date() }
         });
 
         return NextResponse.json(updatedParticipant);
