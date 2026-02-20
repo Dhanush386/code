@@ -274,6 +274,11 @@ function ContestContent() {
                 e.preventDefault();
                 setNotification({ show: true, message: "KEYBOARD PASTE BLOCKED: Manual input is mandatory for this relay.", type: 'warning' });
             }
+
+            // Detect Windows/Meta key
+            if (e.key === 'Meta') {
+                registerViolation("Windows/System Key Pressed");
+            }
         };
 
         sendHeartbeat();
