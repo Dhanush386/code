@@ -19,6 +19,7 @@ export default function ParticipantPortal() {
     const [teamName, setTeamName] = useState('');
     const [collegeName, setCollegeName] = useState('');
     const [members, setMembers] = useState('');
+    const [regNos, setRegNos] = useState('');
 
     // Login states
     const [loginTeamName, setLoginTeamName] = useState('');
@@ -32,7 +33,7 @@ export default function ParticipantPortal() {
                 const res = await fetch('/api/participant/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ teamName, collegeName, members })
+                    body: JSON.stringify({ teamName, collegeName, members, regNos })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Registration failed');
@@ -156,6 +157,23 @@ export default function ParticipantPortal() {
                                                     onChange={(e) => setMembers(e.target.value)}
                                                     className="w-full pl-12 pr-6 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-bold text-gray-800 italic"
                                                     placeholder="Alice, Bob, Charlie"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-[0.2em] italic">Registration Numbers (Comma separated)</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-600 transition-colors">
+                                                    <Sparkles size={18} />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={regNos}
+                                                    onChange={(e) => setRegNos(e.target.value)}
+                                                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-bold text-gray-800 italic"
+                                                    placeholder="101, 102, 103"
                                                     required
                                                 />
                                             </div>

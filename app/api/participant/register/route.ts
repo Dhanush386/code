@@ -3,9 +3,9 @@ import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
     try {
-        const { teamName, collegeName, members } = await req.json();
+        const { teamName, collegeName, members, regNos } = await req.json();
 
-        if (!teamName || !collegeName || !members) {
+        if (!teamName || !collegeName || !members || !regNos) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
 
@@ -17,11 +17,30 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Team name already registered' }, { status: 400 });
         }
 
+        // Check for duplicate registration numbers
+        const allParticipants = await prisma.participant.findMany({
+            select: { regNos: true, teamName: true }
+        });
+
+        const newRegs = regNos.split(',').map((r: string) => r.trim().toUpperCase()).filter(Boolean);
+
+        for (const p of allParticipants) {
+            const existingRegs = p.regNos.split(',').map(r => r.trim().toUpperCase());
+            for (const reg of newRegs) {
+                if (existingRegs.includes(reg)) {
+                    return NextResponse.json({
+                        error: `Registration Number [${reg}] is already registered under team "${p.teamName}".`
+                    }, { status: 400 });
+                }
+            }
+        }
+
         const participant = await prisma.participant.create({
             data: {
                 teamName,
                 collegeName,
                 members,
+                regNos,
                 lastActive: new Date()
             }
         });
