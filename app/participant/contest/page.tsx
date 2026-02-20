@@ -403,12 +403,19 @@ function ContestContent() {
                         localStorage.removeItem('activeExamCode');
                         alert(`PHASE COMPLETE! Score: ${questScore}/${totalMarks}. Moving to next node.`);
                         router.push('/participant/exam-entry');
-                    }, 3000);
+                    }, 2000);
+                } else if (activeIndex < allQuestions.length - 1) {
+                    // Automatically move to the next question in the phase
+                    setTimeout(() => {
+                        alert(`PROTOCOL SYNCED! Question mastered. Transitioning to next challenge...`);
+                        setSubmissionResult(null);
+                        switchQuestion(activeIndex + 1);
+                    }, 2000);
                 } else {
                     setTimeout(() => {
-                        alert(`PROTOCOL SYNCED! Question mastered. Complete remaining node challenges to unlock the next phase.`);
+                        alert(`PROTOCOL SYNCED! Question mastered. Complete any remaining node challenges to unlock the next phase.`);
                         setSubmissionResult(null);
-                    }, 3000);
+                    }, 2000);
                 }
             } else if (passed > 0) {
                 setSubmissionResult('partial');
