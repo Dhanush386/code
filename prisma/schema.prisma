@@ -19,18 +19,20 @@ model Organizer {
 }
 
 model Participant {
-  id           String      @id @default(cuid())
-  teamName     String      @unique
-  collegeName  String
-  members      String      // Comma-separated or JSON string
-  currentLevel Int         @default(1)
-  score        Int         @default(0)
-  totalTime    Int         @default(0) // Seconds
-  isStarted    Boolean     @default(false)
-  violationCount Int        @default(0)
-  lastActive     DateTime    @default(now())
-  submissions  Submission[]
-  exams        ParticipantExam[]
+  id             String            @id @default(cuid())
+  teamName       String            @unique
+  collegeName    String
+  members        String            // Comma-separated or JSON string
+  currentLevel   Int               @default(1)
+  score          Int               @default(0)
+  totalTime      Int               @default(0) // Seconds
+  isStarted      Boolean           @default(false)
+  violationCount Int               @default(0)
+  loginAttempts  Int               @default(0)
+  timeRemaining  Int               @default(-1)
+  lastActive     DateTime          @default(now())
+  submissions    Submission[]
+  exams          ParticipantExam[]
 }
 
 model Question {

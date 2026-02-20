@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
     try {
-        const { participantId } = await req.json();
+        const { participantId, timeRemaining } = await req.json();
 
         if (!participantId) {
             return NextResponse.json({ error: 'Participant ID is required' }, { status: 400 });
@@ -13,7 +13,8 @@ export async function POST(req: NextRequest) {
             where: { id: participantId },
             data: {
                 lastActive: new Date(),
-                isStarted: true
+                isStarted: true,
+                timeRemaining: timeRemaining !== undefined ? timeRemaining : undefined
             }
         });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Editor from '@monaco-editor/react';
 import {
@@ -43,6 +43,7 @@ function ContestContent() {
 
     const [loading, setLoading] = useState(true);
     const [timeRemaining, setTimeRemaining] = useState(1800); // 30 minutes in seconds
+    const timeRef = useRef<number>(1800);
     const [currentLevel, setCurrentLevel] = useState(1);
     const [violationCount, setViolationCount] = useState(0);
     const [showWarning, setShowWarning] = useState(false);
@@ -158,7 +159,20 @@ function ContestContent() {
                     setQuestion(formattedQuestions[0]);
                     setSelectedLanguage(formattedQuestions[0].allowedLanguages[0]);
                     setCurrentLevel(level.levelNumber);
-                    setTimeRemaining(level.timeLimit * 60);
+
+                    // Session Recovery Check
+                    const pData = localStorage.getItem('participant');
+                    let initialTime = level.timeLimit * 60;
+                    if (pData) {
+                        const p = JSON.parse(pData);
+                        if (p.timeRemaining && p.timeRemaining > 0) {
+                            initialTime = p.timeRemaining;
+                            console.log(`Resuming session with ${initialTime}s remaining`);
+                        }
+                    }
+
+                    setTimeRemaining(initialTime);
+                    timeRef.current = initialTime;
                 }
                 setLoading(false);
             } catch (err: any) {
@@ -177,7 +191,11 @@ function ContestContent() {
             return;
         }
         const timer = setInterval(() => {
-            setTimeRemaining(prev => prev - 1);
+            setTimeRemaining(prev => {
+                const next = prev - 1;
+                timeRef.current = next;
+                return next;
+            });
         }, 1000);
         return () => clearInterval(timer);
     }, [timeRemaining]);
@@ -215,6 +233,14 @@ function ContestContent() {
                     if (res.ok) {
                         const latest = await res.json();
                         setTotalScore(latest.score || 0);
+                        setViolationCount(latest.violationCount || 0);
+
+                        // If we haven't initialized time yet or it was just 0, sync from server
+                        if (timeRef.current <= 0 && latest.timeRemaining > 0) {
+                            setTimeRemaining(latest.timeRemaining);
+                            timeRef.current = latest.timeRemaining;
+                        }
+
                         localStorage.setItem('participant', JSON.stringify(latest));
                     }
                 } catch (err) {
@@ -255,7 +281,10 @@ function ContestContent() {
                 await fetch('/api/participant/heartbeat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ participantId: participant.id })
+                    body: JSON.stringify({
+                        participantId: participant.id,
+                        timeRemaining: timeRef.current
+                    })
                 });
             } catch (error) {
                 console.error('Heartbeat failed:', error);

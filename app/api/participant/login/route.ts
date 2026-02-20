@@ -17,13 +17,23 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Team not found. Please register first.' }, { status: 404 });
         }
 
-        // Update last active on login
-        await prisma.participant.update({
+        // Check attempt limit
+        if (participant.loginAttempts >= 2) {
+            return NextResponse.json({
+                error: 'Maximum login attempts (2) reached. Please contact proctors if this is an error.'
+            }, { status: 403 });
+        }
+
+        // Update last active and increment attempts on login
+        const updatedParticipant = await prisma.participant.update({
             where: { id: participant.id },
-            data: { lastActive: new Date() }
+            data: {
+                lastActive: new Date(),
+                loginAttempts: { increment: 1 }
+            }
         });
 
-        return NextResponse.json(participant);
+        return NextResponse.json(updatedParticipant);
     } catch (error: any) {
         console.error('Login error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
