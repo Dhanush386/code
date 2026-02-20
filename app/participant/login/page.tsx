@@ -3,11 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, School, UserPlus, ArrowRight, Loader2, Code } from 'lucide-react';
+import { Users, School, UserPlus, ArrowRight, Loader2, Code, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export default function ParticipantPortal() {
     const [isRegistering, setIsRegistering] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [notificationModal, setNotificationModal] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({
+        show: false,
+        message: '',
+        type: 'success'
+    });
     const router = useRouter();
 
     // Registration states
@@ -32,8 +37,11 @@ export default function ParticipantPortal() {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Registration failed');
 
-                alert('Team registered successfully! Please login to continue.');
-                setIsRegistering(false);
+                setNotificationModal({ show: true, message: 'Team registered successfully! Initializing node access...', type: 'success' });
+                setTimeout(() => {
+                    setNotificationModal(prev => ({ ...prev, show: false }));
+                    setIsRegistering(false);
+                }, 2000);
             } else {
                 const res = await fetch('/api/participant/login', {
                     method: 'POST',
@@ -47,7 +55,7 @@ export default function ParticipantPortal() {
                 router.push('/participant/exam-entry');
             }
         } catch (error: any) {
-            alert(error.message);
+            setNotificationModal({ show: true, message: error.message, type: 'error' });
         } finally {
             setLoading(false);
         }
@@ -205,6 +213,40 @@ export default function ParticipantPortal() {
                     </button>
                 </div>
             </motion.div>
+
+            {/* Notification Modal */}
+            <AnimatePresence>
+                {notificationModal.show && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-950/80 backdrop-blur-md"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-gray-100 shadow-2xl"
+                        >
+                            <div className={`inline-flex p-6 rounded-[2rem] border mb-8 ${notificationModal.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
+                                {notificationModal.type === 'success' ? <CheckCircle2 size={60} /> : <AlertCircle size={60} />}
+                            </div>
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">
+                                {notificationModal.type === 'success' ? 'Synchronized' : 'Access Denied'}
+                            </h2>
+                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                                {notificationModal.message}
+                            </p>
+                            <button
+                                onClick={() => setNotificationModal({ ...notificationModal, show: false })}
+                                className={`w-full py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm transition-all shadow-xl active:scale-95 ${notificationModal.type === 'success' ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200' : 'bg-red-600 text-white hover:bg-red-700 shadow-red-200'}`}
+                            >
+                                {notificationModal.type === 'success' ? 'Continue' : 'Acknowledge'}
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Key, ArrowRight, Loader2, Sparkles, ShieldAlert, LogOut } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Key, ArrowRight, Loader2, Sparkles, ShieldAlert, LogOut, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export default function ExamEntry() {
     const [examCode, setExamCode] = useState('');
     const [loading, setLoading] = useState(false);
+    const [notificationModal, setNotificationModal] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({
+        show: false,
+        message: '',
+        type: 'error'
+    });
     const [prevCode, setPrevCode] = useState<string | null>(null);
     const router = useRouter();
 
@@ -50,7 +55,7 @@ export default function ExamEntry() {
             localStorage.setItem('activeExamCode', examCode);
             router.push(`/participant/contest?code=${examCode}`);
         } catch (err: any) {
-            alert(err.message);
+            setNotificationModal({ show: true, message: err.message, type: 'error' });
         } finally {
             setLoading(false);
         }
@@ -157,6 +162,40 @@ export default function ExamEntry() {
                     </div>
                 </motion.div>
             </div>
+
+            {/* Notification Modal */}
+            <AnimatePresence>
+                {notificationModal.show && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-950/80 backdrop-blur-md"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-gray-100 shadow-2xl"
+                        >
+                            <div className={`inline-flex p-6 rounded-[2rem] border mb-8 ${notificationModal.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
+                                {notificationModal.type === 'success' ? <CheckCircle2 size={60} /> : <AlertCircle size={60} />}
+                            </div>
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">
+                                {notificationModal.type === 'success' ? 'Synchronized' : 'Access Denied'}
+                            </h2>
+                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                                {notificationModal.message}
+                            </p>
+                            <button
+                                onClick={() => setNotificationModal({ ...notificationModal, show: false })}
+                                className={`w-full py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm transition-all shadow-xl active:scale-95 ${notificationModal.type === 'success' ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200' : 'bg-red-600 text-white hover:bg-red-700 shadow-red-200'}`}
+                            >
+                                {notificationModal.type === 'success' ? 'Continue' : 'Acknowledge'}
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

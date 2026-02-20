@@ -63,6 +63,7 @@ function ContestContent() {
     const [question, setQuestion] = useState<any>(null);
     const [showTimeUpModal, setShowTimeUpModal] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [transitionStatus, setTransitionStatus] = useState<'sync' | 'phase' | 'locked' | null>(null);
 
     // Fullscreen Detection
     useEffect(() => {
@@ -421,25 +422,26 @@ function ContestContent() {
             if (passed === tCount && tCount > 0) {
                 setSubmissionResult('success');
 
-                // Only redirect if the entire level is complete
                 if (levelActuallyUnlocked) {
+                    setTransitionStatus('phase');
                     setTimeout(() => {
                         localStorage.removeItem('activeExamCode');
-                        alert(`PHASE COMPLETE! Score: ${questScore}/${totalMarks}. Moving to next node.`);
                         router.push('/participant/exam-entry');
-                    }, 2000);
+                    }, 3000);
                 } else if (activeIndex < allQuestions.length - 1) {
                     // Automatically move to the next question in the phase
+                    setTransitionStatus('sync');
                     setTimeout(() => {
-                        alert(`PROTOCOL SYNCED! Question mastered. Transitioning to next challenge...`);
+                        setTransitionStatus(null);
                         setSubmissionResult(null);
                         switchQuestion(activeIndex + 1);
-                    }, 2000);
+                    }, 3000);
                 } else {
+                    setTransitionStatus('locked');
                     setTimeout(() => {
-                        alert(`PROTOCOL SYNCED! Question mastered. Complete any remaining node challenges to unlock the next phase.`);
+                        setTransitionStatus(null);
                         setSubmissionResult(null);
-                    }, 2000);
+                    }, 3000);
                 }
             } else if (passed > 0) {
                 setSubmissionResult('partial');
@@ -910,7 +912,82 @@ function ContestContent() {
                         </motion.div>
                     </motion.div>
                 )}
-            </AnimatePresence>
+                {/* Phase & Transition Modals */}
+                <AnimatePresence>
+                    {transitionStatus && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-gray-950/80 backdrop-blur-md"
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9, y: 20 }}
+                                animate={{ scale: 1, y: 0 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                className="bg-white rounded-[3rem] p-12 max-w-lg w-full text-center border-4 border-indigo-500 shadow-2xl shadow-indigo-500/20 relative overflow-hidden"
+                            >
+                                {/* Decorative scanline */}
+                                <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 animate-scanline" />
+
+                                {transitionStatus === 'sync' && (
+                                    <>
+                                        <div className="inline-flex p-6 bg-indigo-50 text-indigo-600 rounded-[2rem] border border-indigo-100 mb-8">
+                                            <Zap size={60} className="animate-pulse" />
+                                        </div>
+                                        <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Synced</h2>
+                                        <p className="text-gray-500 font-bold italic text-sm mb-0 uppercase tracking-widest leading-relaxed">
+                                            Question mastered. Re-routing to next available challenge node...
+                                        </p>
+                                        <div className="mt-8 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: "100%" }}
+                                                transition={{ duration: 3, ease: "linear" }}
+                                                className="h-full bg-indigo-600"
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {transitionStatus === 'phase' && (
+                                    <>
+                                        <div className="inline-flex p-6 bg-emerald-50 text-emerald-600 rounded-[2rem] border border-emerald-100 mb-8">
+                                            <CheckCircle2 size={60} className="animate-bounce" />
+                                        </div>
+                                        <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Phase Complete</h2>
+                                        <p className="text-gray-500 font-bold italic text-sm mb-4 uppercase tracking-widest leading-relaxed">
+                                            All challenges in this node have been synchronized.
+                                        </p>
+                                        <p className="text-2xl font-black text-emerald-600 italic mb-8">
+                                            PHASE UNLOCKED
+                                        </p>
+                                        <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: "100%" }}
+                                                transition={{ duration: 3, ease: "linear" }}
+                                                className="h-full bg-emerald-500"
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+                                {transitionStatus === 'locked' && (
+                                    <>
+                                        <div className="inline-flex p-6 bg-orange-50 text-orange-600 rounded-[2rem] border border-orange-100 mb-8">
+                                            <ShieldAlert size={60} />
+                                        </div>
+                                        <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Sync Incomplete</h2>
+                                        <p className="text-gray-500 font-bold italic text-sm mb-0 uppercase tracking-widest leading-relaxed">
+                                            Challenge mastered, but remaining node vulnerabilities detected. Complete all tasks to unlock the next phase.
+                                        </p>
+                                    </>
+                                )}
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
         </div>
     );
 }
