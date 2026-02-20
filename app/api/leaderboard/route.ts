@@ -9,6 +9,9 @@ export async function GET(req: NextRequest) {
         // In a real app, calculate rankings from submissions
         // For this prototype, return all participants with their current status
         const participants = await prisma.participant.findMany({
+            include: {
+                submissions: true
+            },
             orderBy: [
                 { score: 'desc' },
                 { totalTime: 'asc' }

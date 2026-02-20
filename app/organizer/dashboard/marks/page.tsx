@@ -1,0 +1,155 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import {
+    Trophy,
+    Clock,
+    Zap,
+    Loader2,
+    Medal,
+    BarChart3,
+    CheckCircle2
+} from 'lucide-react';
+
+interface Submission {
+    id: string;
+    levelNumber: number;
+    score: number;
+}
+
+interface Participant {
+    id: string;
+    teamName: string;
+    collegeName: string;
+    currentLevel: number;
+    score: number;
+    submissions: Submission[];
+}
+
+export default function MarksDashboard() {
+    const [participants, setParticipants] = useState<Participant[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const getPhaseMarks = (submissions: Submission[] = [], level: number) => {
+        return submissions
+            .filter(s => s.levelNumber === level)
+            .reduce((sum, s) => sum + s.score, 0);
+    };
+
+    useEffect(() => {
+        const fetchParticipants = () => {
+            fetch('/api/leaderboard')
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) setParticipants(data);
+                })
+                .finally(() => setLoading(false));
+        };
+
+        fetchParticipants();
+        const interval = setInterval(fetchParticipants, 10000); // 10s polling
+
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="space-y-10">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-black italic tracking-tighter text-gray-950 uppercase">Phasewise Marks</h1>
+                    <p className="text-gray-400 font-bold italic text-sm mt-1 uppercase tracking-widest text-indigo-500">Deep-dive score auditing</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 font-black italic text-xs uppercase">
+                        <BarChart3 size={14} />
+                        Real-time Stats
+                    </div>
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="flex items-center justify-center py-20">
+                    <Loader2 className="animate-spin text-indigo-500" size={40} />
+                </div>
+            ) : (
+                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 overflow-hidden">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-gray-50 border-b border-gray-100">
+                                <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest">Rank</th>
+                                <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest">Team Identity</th>
+                                <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Current Phase</th>
+                                <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Level 01</th>
+                                <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Level 02</th>
+                                <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Level 03</th>
+                                <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center bg-gray-100/50">Total Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {participants.length > 0 ? participants.map((team, idx) => (
+                                <motion.tr
+                                    key={team.id}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    className="group hover:bg-indigo-50/50 transition-colors border-b border-gray-50 last:border-0"
+                                >
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center gap-3">
+                                            {idx < 3 ? (
+                                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${idx === 0 ? 'bg-yellow-100 text-yellow-600' :
+                                                    idx === 1 ? 'bg-gray-100 text-gray-500' :
+                                                        'bg-orange-100 text-orange-600'
+                                                    }`}>
+                                                    <Medal size={20} />
+                                                </div>
+                                            ) : (
+                                                <span className="h-10 w-10 flex items-center justify-center text-lg font-black italic text-gray-300">
+                                                    #{idx + 1}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div>
+                                            <p className="font-black italic text-gray-950 uppercase tracking-tight group-hover:text-indigo-600 transition-colors">{team.teamName}</p>
+                                            <p className="text-[10px] font-bold text-gray-400 italic uppercase mt-1">{team.collegeName}</p>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-center">
+                                        <span className={`px-3 py-1 bg-gray-950 text-white rounded-lg text-[10px] font-black italic uppercase`}>
+                                            Phase {team.currentLevel}
+                                        </span>
+                                    </td>
+                                    {[1, 2, 3].map(level => {
+                                        const marks = getPhaseMarks(team.submissions, level);
+                                        return (
+                                            <td key={level} className="px-8 py-6 text-center">
+                                                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl font-black italic text-lg ${marks > 0 ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-gray-50 text-gray-300'}`}>
+                                                    {marks.toString().padStart(3, '0')}
+                                                </div>
+                                            </td>
+                                        );
+                                    })}
+                                    <td className="px-8 py-6 text-center bg-gray-50/30">
+                                        <span className="text-2xl font-black italic text-gray-950">
+                                            {team.score.toString().padStart(4, '0')}
+                                        </span>
+                                    </td>
+                                </motion.tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan={7} className="py-20 text-center">
+                                        <BarChart3 size={60} className="mx-auto mb-4 text-gray-100" />
+                                        <p className="font-black italic text-gray-300 uppercase tracking-widest text-xs">Awaiting submission vectors...</p>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    );
+}

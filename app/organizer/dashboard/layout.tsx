@@ -12,7 +12,8 @@ import {
     Settings,
     LogOut,
     ChevronRight,
-    Terminal
+    Terminal,
+    BarChart3
 } from 'lucide-react';
 
 const navItems = [
@@ -22,6 +23,7 @@ const navItems = [
     { name: 'Create Exam', icon: PlusCircle, href: '/organizer/dashboard/exams/new' },
     { name: 'Exam Bank', icon: BookOpen, href: '/organizer/dashboard/exams' },
     { name: 'Leaderboard', icon: Trophy, href: '/organizer/dashboard/leaderboard' },
+    { name: 'Phasewise Marks', icon: BarChart3, href: '/organizer/dashboard/marks' },
     { name: 'Problem Tester', icon: Terminal, href: '/organizer/dashboard/tester' },
     { name: 'Participants', icon: Users, href: '/organizer/dashboard/participants' },
 ];
