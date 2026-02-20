@@ -302,9 +302,44 @@ function ContestContent() {
         }
     }, [violationCount, router]);
 
-    const registerViolation = useCallback((msg: string) => {
+    const registerViolation = useCallback(async (msg: string) => {
         console.log(`Violation: ${msg}`);
-        setViolationCount(prev => prev + 1);
+
+        try {
+            const participantData = localStorage.getItem('participant');
+            if (participantData) {
+                const p = JSON.parse(participantData);
+                const res = await fetch('/api/participant/violation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        participantId: p.id,
+                        reason: msg
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    setTotalScore(data.score);
+                    setViolationCount(data.violationCount);
+
+                    // Update local storage
+                    const updatedP = {
+                        ...p,
+                        score: data.score,
+                        violationCount: data.violationCount
+                    };
+                    localStorage.setItem('participant', JSON.stringify(updatedP));
+                } else {
+                    // Fallback incremental if API fails (though server state is preferred)
+                    setViolationCount(prev => prev + 1);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to sync violation penalty:', error);
+            setViolationCount(prev => prev + 1);
+        }
+
         setShowWarning(true);
     }, []);
 

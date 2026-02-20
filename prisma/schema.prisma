@@ -27,7 +27,8 @@ model Participant {
   score        Int         @default(0)
   totalTime    Int         @default(0) // Seconds
   isStarted    Boolean     @default(false)
-  lastActive   DateTime    @default(now())
+  violationCount Int        @default(0)
+  lastActive     DateTime    @default(now())
   submissions  Submission[]
   exams        ParticipantExam[]
 }
