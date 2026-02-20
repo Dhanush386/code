@@ -352,6 +352,8 @@ function ContestContent() {
             const questScore = tCount > 0 ? Math.round((passed / tCount) * totalMarks) : 0;
             setLastSubmissionScore(questScore);
 
+            let levelActuallyUnlocked = false;
+
             // Persist to DB
             const participantData = localStorage.getItem('participant');
             if (participantData) {
@@ -374,8 +376,18 @@ function ContestContent() {
                 if (subRes.ok) {
                     const subData = await subRes.json();
                     setTotalScore(subData.score);
+
+                    // Check if the level was actually incremented by the server
+                    if (subData.currentLevel > currentLevel) {
+                        levelActuallyUnlocked = true;
+                    }
+
                     // Update local storage
-                    const updatedP = { ...participant, score: subData.score };
+                    const updatedP = {
+                        ...participant,
+                        score: subData.score,
+                        currentLevel: subData.currentLevel
+                    };
                     localStorage.setItem('participant', JSON.stringify(updatedP));
                 }
             }
@@ -384,11 +396,20 @@ function ContestContent() {
 
             if (passed === tCount && tCount > 0) {
                 setSubmissionResult('success');
-                setTimeout(() => {
-                    localStorage.removeItem('activeExamCode');
-                    alert(`ULTIMATE VICTORY! Score: ${questScore}/${totalMarks}. Level Unlocked.`);
-                    router.push('/participant/exam-entry');
-                }, 3000);
+
+                // Only redirect if the entire level is complete
+                if (levelActuallyUnlocked) {
+                    setTimeout(() => {
+                        localStorage.removeItem('activeExamCode');
+                        alert(`PHASE COMPLETE! Score: ${questScore}/${totalMarks}. Moving to next node.`);
+                        router.push('/participant/exam-entry');
+                    }, 3000);
+                } else {
+                    setTimeout(() => {
+                        alert(`PROTOCOL SYNCED! Question mastered. Complete remaining node challenges to unlock the next phase.`);
+                        setSubmissionResult(null);
+                    }, 3000);
+                }
             } else if (passed > 0) {
                 setSubmissionResult('partial');
             } else {
