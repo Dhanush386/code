@@ -21,7 +21,8 @@ import {
     Sparkles,
     Moon,
     Sun,
-    ArrowRight
+    ArrowRight,
+    Maximize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

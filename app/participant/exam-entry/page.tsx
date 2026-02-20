@@ -39,6 +39,13 @@ export default function ExamEntry() {
                 throw new Error(data.error || 'Invalid code');
             }
 
+            // Attempt Fullscreen on Interaction
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {
+                    console.log("Fullscreen request deferred or denied.");
+                });
+            }
+
             // Redirect to the actual contest interface
             localStorage.setItem('activeExamCode', examCode);
             router.push(`/participant/contest?code=${examCode}`);
