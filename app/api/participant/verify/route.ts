@@ -3,10 +3,23 @@ import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
     try {
-        const { accessCode } = await req.json();
+        const { accessCode, participantId } = await req.json();
 
         if (!accessCode) {
             return NextResponse.json({ error: 'Access code is required' }, { status: 400 });
+        }
+
+        // Check participant attempts if provided
+        if (participantId) {
+            const participant = await prisma.participant.findUnique({
+                where: { id: participantId }
+            });
+
+            if (participant && participant.loginAttempts > 2) {
+                return NextResponse.json({
+                    error: 'Maximum login attempts (2) reached. Please contact proctors if this is an error.'
+                }, { status: 403 });
+            }
         }
 
         const level = await prisma.examLevel.findUnique({

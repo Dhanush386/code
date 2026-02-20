@@ -32,10 +32,16 @@ export default function ExamEntry() {
         setLoading(true);
 
         try {
+            const participantData = localStorage.getItem('participant');
+            const p = participantData ? JSON.parse(participantData) : null;
+
             const res = await fetch('/api/participant/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ accessCode: examCode })
+                body: JSON.stringify({
+                    accessCode: examCode,
+                    participantId: p?.id
+                })
             });
 
             const data = await res.json();
