@@ -56,12 +56,52 @@ export async function POST(req: NextRequest) {
             totalTime: participant.totalTime + timeTaken
         };
 
-        // Only progress level if all test cases passed for the FIRST time
-        const alreadyPassed = submissions.some((s: any) => s.status === 'PASSED' && s.id !== submission.id);
-        if (isPassed && !alreadyPassed) {
-            updateData.currentLevel = participant.currentLevel === levelNumber
-                ? levelNumber + 1
-                : participant.currentLevel;
+        // Only progress level if all test cases passed
+        if (isPassed) {
+            // Find ALL questions in this level for this participant's exam
+            const participantWithExam = await prisma.participant.findUnique({
+                where: { id: participantId },
+                include: {
+                    exams: {
+                        include: {
+                            exam: {
+                                include: {
+                                    levels: {
+                                        where: { levelNumber: levelNumber },
+                                        include: {
+                                            questions: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (participantWithExam && participantWithExam.exams.length > 0) {
+                const currentLevelConfig = participantWithExam.exams[0].exam.levels[0];
+                if (currentLevelConfig) {
+                    const levelQuestionIds = currentLevelConfig.questions.map((q: any) => q.questionId);
+
+                    // Count how many unique questions in this level have at least one PASSED submission
+                    const passedQuestions = await prisma.submission.groupBy({
+                        by: ['questionId'],
+                        where: {
+                            participantId: participantId,
+                            questionId: { in: levelQuestionIds },
+                            status: 'PASSED'
+                        }
+                    });
+
+                    // If they've passed all questions in this level, move them up
+                    if (passedQuestions.length === levelQuestionIds.length && levelQuestionIds.length > 0) {
+                        updateData.currentLevel = participant.currentLevel === levelNumber
+                            ? levelNumber + 1
+                            : participant.currentLevel;
+                    }
+                }
+            }
         }
 
         const updatedParticipant = await prisma.participant.update({
