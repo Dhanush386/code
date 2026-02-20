@@ -21,6 +21,7 @@ interface Participant {
     currentLevel: number;
     score: number;
     violationCount: number;
+    loginAttempts: number;
     totalTime: number;
 }
 
@@ -66,6 +67,7 @@ export default function Leaderboard() {
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest">Team Identity</th>
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Phase</th>
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Score</th>
+                                <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Attempts</th>
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center text-red-400">Violations</th>
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Duration</th>
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-right">Action</th>
@@ -113,6 +115,11 @@ export default function Leaderboard() {
                                         </span>
                                     </td>
                                     <td className="px-8 py-6 text-center">
+                                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black italic uppercase ${team.loginAttempts >= 2 ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-gray-100 text-gray-600'}`}>
+                                            {team.loginAttempts} / 2
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-6 text-center">
                                         <span className="font-black italic text-red-500">
                                             {(team.violationCount || 0).toString().padStart(2, '0')}
                                         </span>
@@ -131,7 +138,7 @@ export default function Leaderboard() {
                                 </motion.tr>
                             )) : (
                                 <tr>
-                                    <td colSpan={7} className="py-20 text-center">
+                                    <td colSpan={8} className="py-20 text-center">
                                         <Trophy size={60} className="mx-auto mb-4 text-gray-100" />
                                         <p className="font-black italic text-gray-300 uppercase tracking-widest text-xs">Waiting for initialization...</p>
                                     </td>
