@@ -20,6 +20,7 @@ interface Participant {
     collegeName: string;
     currentLevel: number;
     score: number;
+    violationCount: number;
     totalTime: number;
 }
 
@@ -65,6 +66,7 @@ export default function Leaderboard() {
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest">Team Identity</th>
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Phase</th>
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Score</th>
+                                <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center text-red-400">Violations</th>
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-center">Duration</th>
                                 <th className="px-8 py-6 text-[10px] font-black italic text-gray-400 uppercase tracking-widest text-right">Action</th>
                             </tr>
@@ -111,6 +113,11 @@ export default function Leaderboard() {
                                         </span>
                                     </td>
                                     <td className="px-8 py-6 text-center">
+                                        <span className="font-black italic text-red-500">
+                                            {(team.violationCount || 0).toString().padStart(2, '0')}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-6 text-center">
                                         <div className="flex items-center justify-center gap-2 text-gray-400 font-bold italic text-sm">
                                             <Clock size={14} />
                                             {Math.floor(team.totalTime / 60)}:{(team.totalTime % 60).toString().padStart(2, '0')}
@@ -124,7 +131,7 @@ export default function Leaderboard() {
                                 </motion.tr>
                             )) : (
                                 <tr>
-                                    <td colSpan={6} className="py-20 text-center">
+                                    <td colSpan={7} className="py-20 text-center">
                                         <Trophy size={60} className="mx-auto mb-4 text-gray-100" />
                                         <p className="font-black italic text-gray-300 uppercase tracking-widest text-xs">Waiting for initialization...</p>
                                     </td>

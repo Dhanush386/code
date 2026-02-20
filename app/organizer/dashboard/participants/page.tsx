@@ -21,6 +21,7 @@ interface Participant {
     members: string;
     currentLevel: number;
     score: number;
+    violationCount: number;
     isStarted: boolean;
     lastActive: string;
 }
@@ -117,7 +118,7 @@ export default function ParticipantsMonitor() {
                                     <div className="w-[1px] h-10 bg-gray-100" />
                                     <div className="text-center">
                                         <p className="text-[10px] font-black text-gray-300 uppercase italic">VIOLATIONS</p>
-                                        <p className="text-lg font-black italic text-red-500">00</p>
+                                        <p className="text-lg font-black italic text-red-500">{(team.violationCount || 0).toString().padStart(2, '0')}</p>
                                     </div>
                                 </div>
 
