@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, School, UserPlus, ArrowRight, Loader2, Code, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Users, School, UserPlus, ArrowRight, Loader2, Code, AlertCircle, CheckCircle2, Sparkles } from 'lucide-react';
 
 export default function ParticipantPortal() {
     const [isRegistering, setIsRegistering] = useState(true);
