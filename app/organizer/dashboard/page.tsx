@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { LayoutDashboard, Users, BookOpen, Trophy, Plus, ArrowUpRight, Clock, ShieldAlert } from 'lucide-react';
