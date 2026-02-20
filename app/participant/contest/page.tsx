@@ -12,6 +12,7 @@ import {
     Zap,
     Terminal,
     AlertTriangle,
+    AlertCircle,
     CheckCircle2,
     XCircle,
     X,
@@ -64,6 +65,11 @@ function ContestContent() {
     const [showTimeUpModal, setShowTimeUpModal] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [transitionStatus, setTransitionStatus] = useState<'sync' | 'phase' | 'locked' | null>(null);
+    const [notification, setNotification] = useState<{ show: boolean; message: string; type: 'success' | 'error' | 'warning' }>({
+        show: false,
+        message: '',
+        type: 'error'
+    });
 
     // Fullscreen Detection
     useEffect(() => {
@@ -153,12 +159,10 @@ function ContestContent() {
                     setSelectedLanguage(formattedQuestions[0].allowedLanguages[0]);
                     setCurrentLevel(level.levelNumber);
                     setTimeRemaining(level.timeLimit * 60);
-                } else {
-                    throw new Error('No questions assigned to this level');
                 }
                 setLoading(false);
             } catch (err: any) {
-                alert(err.message);
+                setNotification({ show: true, message: err.message, type: 'error' });
                 router.push('/participant/exam-entry');
             }
         };
@@ -268,7 +272,7 @@ function ContestContent() {
             // Block Ctrl+V or Cmd+V (for Mac)
             if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
                 e.preventDefault();
-                alert("KEYBOARD PASTE BLOCKED: Manual input is mandatory for this relay.");
+                setNotification({ show: true, message: "KEYBOARD PASTE BLOCKED: Manual input is mandatory for this relay.", type: 'warning' });
             }
         };
 
@@ -288,7 +292,7 @@ function ContestContent() {
     // Separate effect for violation enforcement to avoid side-effects during render
     useEffect(() => {
         if (violationCount >= 3) {
-            alert("AUTO-SUBMISSION TRIGGERED: Multiple violations detected.");
+            setNotification({ show: true, message: "AUTO-SUBMISSION TRIGGERED: Multiple violations detected.", type: 'error' });
             router.push('/participant/exam-entry');
         }
     }, [violationCount, router]);
@@ -649,7 +653,7 @@ function ContestContent() {
                                 className={`transition-all duration-500 ${runResult ? 'h-1/2' : 'h-full'}`}
                                 onPaste={(e) => {
                                     e.preventDefault();
-                                    alert("PASTE DETECTED: Manual input required for security protocols.");
+                                    setNotification({ show: true, message: "PASTE DETECTED: Manual input required for security protocols.", type: 'warning' });
                                 }}
                             >
                                 <Editor
@@ -814,186 +818,230 @@ function ContestContent() {
                     </div>
                 </div>
             </div>
+
+            {/* Main Content Area Ends */}
+
+            {/* Cheating Warning Modal */}
+            <AnimatePresence>
+                {showWarning && (
+                    <motion.div
+                        key="modal"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-red-950/40 backdrop-blur-md"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-red-500 shadow-2xl shadow-red-500/20"
+                        >
+                            <div className="inline-flex p-6 bg-red-50 text-red-600 rounded-[2rem] border border-red-100 mb-8 animate-bounce">
+                                <AlertTriangle size={60} />
+                            </div>
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Violation</h2>
+                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                                Critical Warning: Outside activity detected. Repeated violations ({violationCount}/3) will result in immediate disqualification.
+                            </p>
+                            <button
+                                onClick={() => setShowWarning(false)}
+                                className="w-full bg-red-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-red-700 active:scale-95 transition-all shadow-xl shadow-red-200"
+                            >
+                                I Acknowledge & Return
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+                {/* Time Expired Modal */}
+                {showTimeUpModal && (
+                    <motion.div
+                        key="timeup-modal"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-950/60 backdrop-blur-xl"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-amber-500 shadow-2xl shadow-amber-500/20"
+                        >
+                            <div className="inline-flex p-6 bg-amber-50 text-amber-600 rounded-[2rem] border border-amber-100 mb-8 animate-pulse">
+                                <Clock size={60} />
+                            </div>
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Phase Time Expired</h2>
+                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                                The relay window for this node has closed. You must now synchronize with the next level.
+                            </p>
+                            <button
+                                onClick={() => router.push('/participant/exam-entry')}
+                                className="w-full bg-amber-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-amber-700 active:scale-95 transition-all shadow-xl shadow-amber-200 flex items-center justify-center gap-3"
+                            >
+                                Re-initialize Connection <ArrowRight size={20} />
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Mandatory Fullscreen Overlay */}
+            <AnimatePresence>
+                {!isFullscreen && !loading && (
+                    <motion.div
+                        key="fullscreen-lock"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-gray-950/90 backdrop-blur-2xl"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-indigo-500 shadow-2xl shadow-indigo-500/20"
+                        >
+                            <div className="inline-flex p-6 bg-indigo-50 text-indigo-600 rounded-[2rem] border border-indigo-100 mb-8 animate-pulse">
+                                <Maximize2 size={60} />
+                            </div>
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Signal Lost</h2>
+                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                                Mandatory proctoring protocol breached. Re-establish full-screen environment to continue the relay.
+                            </p>
+                            <button
+                                onClick={enterFullscreen}
+                                className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-indigo-700 active:scale-95 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center gap-3"
+                            >
+                                Synchronize Node <Sparkles size={20} />
+                            </button>
+                            <p className="mt-6 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] italic">
+                                Unauthorized window transition detected
+                            </p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Phase & Transition Modals */}
+            <AnimatePresence>
+                {transitionStatus && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-gray-950/80 backdrop-blur-md"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-[3rem] p-12 max-w-lg w-full text-center border-4 border-indigo-500 shadow-2xl shadow-indigo-500/20 relative overflow-hidden"
+                        >
+                            {/* Decorative scanline */}
+                            <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 animate-scanline" />
+
+                            {transitionStatus === 'sync' && (
+                                <>
+                                    <div className="inline-flex p-6 bg-indigo-50 text-indigo-600 rounded-[2rem] border border-indigo-100 mb-8">
+                                        <Zap size={60} className="animate-pulse" />
+                                    </div>
+                                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Synced</h2>
+                                    <p className="text-gray-500 font-bold italic text-sm mb-0 uppercase tracking-widest leading-relaxed">
+                                        Question mastered. Re-routing to next available challenge node...
+                                    </p>
+                                    <div className="mt-8 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: "100%" }}
+                                            transition={{ duration: 3, ease: "linear" }}
+                                            className="h-full bg-indigo-600"
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {transitionStatus === 'phase' && (
+                                <>
+                                    <div className="inline-flex p-6 bg-emerald-50 text-emerald-600 rounded-[2rem] border border-emerald-100 mb-8">
+                                        <CheckCircle2 size={60} className="animate-bounce" />
+                                    </div>
+                                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Phase Complete</h2>
+                                    <p className="text-gray-500 font-bold italic text-sm mb-4 uppercase tracking-widest leading-relaxed">
+                                        All challenges in this node have been synchronized.
+                                    </p>
+                                    <p className="text-2xl font-black text-emerald-600 italic mb-8">
+                                        PHASE UNLOCKED
+                                    </p>
+                                    <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: "100%" }}
+                                            transition={{ duration: 3, ease: "linear" }}
+                                            className="h-full bg-emerald-500"
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {transitionStatus === 'locked' && (
+                                <>
+                                    <div className="inline-flex p-6 bg-orange-50 text-orange-600 rounded-[2rem] border border-orange-100 mb-8">
+                                        <ShieldAlert size={60} />
+                                    </div>
+                                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Sync Incomplete</h2>
+                                    <p className="text-gray-500 font-bold italic text-sm mb-0 uppercase tracking-widest leading-relaxed">
+                                        Challenge mastered, but remaining node vulnerabilities detected. Complete all tasks to unlock the next phase.
+                                    </p>
+                                </>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Generic Notification Modal */}
+            <AnimatePresence>
+                {notification.show && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[400] flex items-center justify-center p-6 bg-gray-950/80 backdrop-blur-md"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-gray-100 shadow-2xl"
+                        >
+                            <div className={`inline-flex p-6 rounded-[2rem] border mb-8 ${notification.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                notification.type === 'error' ? 'bg-red-50 text-red-600 border-red-100' :
+                                    'bg-orange-50 text-orange-600 border-orange-100'
+                                }`}>
+                                {notification.type === 'success' ? <CheckCircle2 size={60} /> :
+                                    notification.type === 'error' ? <AlertCircle size={60} /> :
+                                        <ShieldAlert size={60} />
+                                }
+                            </div>
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">
+                                {notification.type === 'success' ? 'Synchronized' :
+                                    notification.type === 'error' ? 'Critical Error' : 'System Notice'}
+                            </h2>
+                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                                {notification.message}
+                            </p>
+                            <button
+                                onClick={() => setNotification({ ...notification, show: false })}
+                                className={`w-full py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm transition-all shadow-xl active:scale-95 ${notification.type === 'success' ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-200' :
+                                    notification.type === 'error' ? 'bg-red-600 text-white hover:bg-red-700 shadow-red-200' :
+                                        'bg-orange-600 text-white hover:bg-orange-700 shadow-orange-200'
+                                    }`}
+                            >
+                                Acknowledge
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
-
-            {/* Cheating Warning Modal */ }
-    <AnimatePresence>
-        {showWarning && (
-            <motion.div
-                key="modal"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-red-950/40 backdrop-blur-md"
-            >
-                <motion.div
-                    initial={{ scale: 0.9, y: 20 }}
-                    animate={{ scale: 1, y: 0 }}
-                    className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-red-500 shadow-2xl shadow-red-500/20"
-                >
-                    <div className="inline-flex p-6 bg-red-50 text-red-600 rounded-[2rem] border border-red-100 mb-8 animate-bounce">
-                        <AlertTriangle size={60} />
-                    </div>
-                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Violation</h2>
-                    <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
-                        Critical Warning: Outside activity detected. Repeated violations ({violationCount}/3) will result in immediate disqualification.
-                    </p>
-                    <button
-                        onClick={() => setShowWarning(false)}
-                        className="w-full bg-red-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-red-700 active:scale-95 transition-all shadow-xl shadow-red-200"
-                    >
-                        I Acknowledge & Return
-                    </button>
-                </motion.div>
-            </motion.div>
-        )}
-        {/* Time Expired Modal */}
-        {showTimeUpModal && (
-            <motion.div
-                key="timeup-modal"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-gray-950/60 backdrop-blur-xl"
-            >
-                <motion.div
-                    initial={{ scale: 0.9, y: 20 }}
-                    animate={{ scale: 1, y: 0 }}
-                    className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-amber-500 shadow-2xl shadow-amber-500/20"
-                >
-                    <div className="inline-flex p-6 bg-amber-50 text-amber-600 rounded-[2rem] border border-amber-100 mb-8 animate-pulse">
-                        <Clock size={60} />
-                    </div>
-                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Phase Time Expired</h2>
-                    <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
-                        The relay window for this node has closed. You must now synchronize with the next level.
-                    </p>
-                    <button
-                        onClick={() => router.push('/participant/exam-entry')}
-                        className="w-full bg-amber-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-amber-700 active:scale-95 transition-all shadow-xl shadow-amber-200 flex items-center justify-center gap-3"
-                    >
-                        Re-initialize Connection <ArrowRight size={20} />
-                    </button>
-                </motion.div>
-            </motion.div>
-        )}
-    </AnimatePresence>
-
-    {/* Mandatory Fullscreen Overlay */ }
-    <AnimatePresence>
-        {!isFullscreen && !loading && (
-            <motion.div
-                key="fullscreen-lock"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-gray-950/90 backdrop-blur-2xl"
-            >
-                <motion.div
-                    initial={{ scale: 0.9, y: 20 }}
-                    animate={{ scale: 1, y: 0 }}
-                    className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-indigo-500 shadow-2xl shadow-indigo-500/20"
-                >
-                    <div className="inline-flex p-6 bg-indigo-50 text-indigo-600 rounded-[2rem] border border-indigo-100 mb-8 animate-pulse">
-                        <Maximize2 size={60} />
-                    </div>
-                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Signal Lost</h2>
-                    <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
-                        Mandatory proctoring protocol breached. Re-establish full-screen environment to continue the relay.
-                    </p>
-                    <button
-                        onClick={enterFullscreen}
-                        className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black italic uppercase tracking-widest text-sm hover:bg-indigo-700 active:scale-95 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center gap-3"
-                    >
-                        Synchronize Node <Sparkles size={20} />
-                    </button>
-                    <p className="mt-6 text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] italic">
-                        Unauthorized window transition detected
-                    </p>
-                </motion.div>
-            </motion.div>
-        )}
-    </AnimatePresence>
-
-    {/* Phase & Transition Modals */ }
-    <AnimatePresence>
-        {transitionStatus && (
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-gray-950/80 backdrop-blur-md"
-            >
-                <motion.div
-                    initial={{ scale: 0.9, y: 20 }}
-                    animate={{ scale: 1, y: 0 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="bg-white rounded-[3rem] p-12 max-w-lg w-full text-center border-4 border-indigo-500 shadow-2xl shadow-indigo-500/20 relative overflow-hidden"
-                >
-                    {/* Decorative scanline */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 animate-scanline" />
-
-                    {transitionStatus === 'sync' && (
-                        <>
-                            <div className="inline-flex p-6 bg-indigo-50 text-indigo-600 rounded-[2rem] border border-indigo-100 mb-8">
-                                <Zap size={60} className="animate-pulse" />
-                            </div>
-                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Synced</h2>
-                            <p className="text-gray-500 font-bold italic text-sm mb-0 uppercase tracking-widest leading-relaxed">
-                                Question mastered. Re-routing to next available challenge node...
-                            </p>
-                            <div className="mt-8 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: "100%" }}
-                                    transition={{ duration: 3, ease: "linear" }}
-                                    className="h-full bg-indigo-600"
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    {transitionStatus === 'phase' && (
-                        <>
-                            <div className="inline-flex p-6 bg-emerald-50 text-emerald-600 rounded-[2rem] border border-emerald-100 mb-8">
-                                <CheckCircle2 size={60} className="animate-bounce" />
-                            </div>
-                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Phase Complete</h2>
-                            <p className="text-gray-500 font-bold italic text-sm mb-4 uppercase tracking-widest leading-relaxed">
-                                All challenges in this node have been synchronized.
-                            </p>
-                            <p className="text-2xl font-black text-emerald-600 italic mb-8">
-                                PHASE UNLOCKED
-                            </p>
-                            <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: "100%" }}
-                                    transition={{ duration: 3, ease: "linear" }}
-                                    className="h-full bg-emerald-500"
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    {transitionStatus === 'locked' && (
-                        <>
-                            <div className="inline-flex p-6 bg-orange-50 text-orange-600 rounded-[2rem] border border-orange-100 mb-8">
-                                <ShieldAlert size={60} />
-                            </div>
-                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Sync Incomplete</h2>
-                            <p className="text-gray-500 font-bold italic text-sm mb-0 uppercase tracking-widest leading-relaxed">
-                                Challenge mastered, but remaining node vulnerabilities detected. Complete all tasks to unlock the next phase.
-                            </p>
-                        </>
-                    )}
-                </motion.div>
-            </motion.div>
-        )}
-    </AnimatePresence>
-        </div>
-    </div>
-);
+    );
 }
 
 export default function ContestInterface() {
