@@ -48,12 +48,29 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Participant not found' }, { status: 404 });
         }
 
-        // Calculate score gain (new score - previous best score)
-        const scoreGain = Math.max(0, score - previousBestScore);
+        // Calculate actual total score from all best submissions to be robust
+        const allBestSubmissions = await prisma.submission.groupBy({
+            by: ['questionId'],
+            where: { participantId },
+            _max: { score: true }
+        });
+        const calculatedBaseScore = allBestSubmissions.reduce((acc, curr) => acc + (curr._max.score || 0), 0);
+
+        // Calculate total time: Sum of (Max timeTaken per Level)
+        const levelMaxTimes = await prisma.submission.groupBy({
+            by: ['levelNumber'],
+            where: { participantId },
+            _max: { timeTaken: true }
+        });
+        const calculatedTotalTime = levelMaxTimes.reduce((acc, curr) => acc + (curr._max.timeTaken || 0), 0);
+
+        // Apply penalties to the base score
+        // Each violation deducts 2 points
+        const finalScore = calculatedBaseScore - (participant.violationCount * 2);
 
         let updateData: any = {
-            score: participant.score + scoreGain,
-            totalTime: participant.totalTime + timeTaken
+            score: finalScore,
+            totalTime: calculatedTotalTime
         };
 
         // Only progress level if all test cases passed
