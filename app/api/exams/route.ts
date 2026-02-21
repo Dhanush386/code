@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
                         levelNumber: level.levelNumber,
                         accessCode: level.accessCode,
                         timeLimit: level.timeLimit,
+                        startTime: level.startTime ? new Date(level.startTime) : null,
                         questions: {
                             create: level.questionIds.map((qid: string) => ({
                                 question: { connect: { id: qid } }

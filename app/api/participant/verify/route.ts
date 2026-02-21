@@ -43,6 +43,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid access code' }, { status: 404 });
         }
 
+        // Enforce startTime check
+        if (level.startTime && new Date() < new Date(level.startTime)) {
+            const timeStr = new Date(level.startTime).toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            });
+            return NextResponse.json({
+                error: `This phase is scheduled to open at ${timeStr}. Please wait for the relay node to initialize.`,
+                startTime: level.startTime
+            }, { status: 403 });
+        }
+
         // If participantId is provided, check which questions they've already passed
         let questionsWithStatus = level.questions;
         let participantTime = -1;

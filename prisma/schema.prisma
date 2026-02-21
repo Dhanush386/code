@@ -91,6 +91,7 @@ model ExamLevel {
   levelNumber  Int
   accessCode   String   @unique
   timeLimit    Int      // Minutes
+  startTime    DateTime? // Opening time
   questions    QuestionOnExam[]
 }
 

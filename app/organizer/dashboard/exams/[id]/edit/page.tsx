@@ -38,9 +38,9 @@ export default function EditExam({ params }: { params: Promise<{ id: string }> }
 
     const [examName, setExamName] = useState('');
     const [levels, setLevels] = useState([
-        { levelNumber: 1, accessCode: generateCode(), timeLimit: 30, questionIds: [] as string[] },
-        { levelNumber: 2, accessCode: generateCode(), timeLimit: 45, questionIds: [] as string[] },
-        { levelNumber: 3, accessCode: generateCode(), timeLimit: 60, questionIds: [] as string[] },
+        { levelNumber: 1, accessCode: generateCode(), timeLimit: 30, startTime: '', questionIds: [] as string[] },
+        { levelNumber: 2, accessCode: generateCode(), timeLimit: 45, startTime: '', questionIds: [] as string[] },
+        { levelNumber: 3, accessCode: generateCode(), timeLimit: 60, startTime: '', questionIds: [] as string[] },
     ]);
 
     useEffect(() => {
@@ -66,6 +66,7 @@ export default function EditExam({ params }: { params: Promise<{ id: string }> }
                         levelNumber: l.levelNumber,
                         accessCode: l.accessCode,
                         timeLimit: l.timeLimit,
+                        startTime: l.startTime ? new Date(l.startTime).toISOString().slice(0, 16) : '',
                         questionIds: l.questions.map((q: any) => q.question.id)
                     })));
                 }
@@ -216,6 +217,22 @@ export default function EditExam({ params }: { params: Promise<{ id: string }> }
                                                 const val = parseInt(e.target.value);
                                                 const newLevels = [...levels];
                                                 newLevels[idx].timeLimit = isNaN(val) ? 0 : val;
+                                                setLevels(newLevels);
+                                            }}
+                                            className="w-full bg-gray-50 border-2 border-transparent rounded-xl px-4 py-3 font-bold text-gray-800 italic outline-none focus:border-blue-500 transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2 col-span-2">
+                                        <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] italic ml-1">
+                                            <Clock size={12} /> Opening Schedule (Optional)
+                                        </label>
+                                        <input
+                                            type="datetime-local"
+                                            value={level.startTime}
+                                            onChange={(e) => {
+                                                const newLevels = [...levels];
+                                                newLevels[idx].startTime = e.target.value;
                                                 setLevels(newLevels);
                                             }}
                                             className="w-full bg-gray-50 border-2 border-transparent rounded-xl px-4 py-3 font-bold text-gray-800 italic outline-none focus:border-blue-500 transition-all"
