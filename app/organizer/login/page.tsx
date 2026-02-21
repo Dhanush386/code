@@ -18,7 +18,7 @@ export default function OrganizerLogin() {
         setError('');
 
         try {
-            const res = await fetch('/api/organizer/login', {
+            const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -27,8 +27,13 @@ export default function OrganizerLogin() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Authentication failed');
 
-            localStorage.setItem('organizer', JSON.stringify(data));
-            router.push('/organizer/dashboard');
+            if (data.role === 'organizer') {
+                localStorage.setItem('organizer', JSON.stringify(data.user));
+                router.push('/organizer/dashboard');
+            } else if (data.role === 'participant') {
+                localStorage.setItem('participant', JSON.stringify(data.user));
+                router.push('/participant/exam-entry');
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {
