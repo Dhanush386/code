@@ -69,7 +69,8 @@ export default function NewExam() {
             // Clean levels to remove any NaN values from timeLimit
             const cleanedLevels = levels.map(level => ({
                 ...level,
-                timeLimit: isNaN(level.timeLimit) ? 30 : level.timeLimit
+                timeLimit: isNaN(level.timeLimit) ? 30 : level.timeLimit,
+                startTime: level.startTime ? new Date(level.startTime).toISOString() : null
             }));
 
             const res = await fetch('/api/exams', {

@@ -66,7 +66,11 @@ export default function EditExam({ params }: { params: Promise<{ id: string }> }
                         levelNumber: l.levelNumber,
                         accessCode: l.accessCode,
                         timeLimit: l.timeLimit,
-                        startTime: l.startTime ? new Date(l.startTime).toISOString().slice(0, 16) : '',
+                        startTime: l.startTime ? (() => {
+                            const d = new Date(l.startTime);
+                            const tzOffset = d.getTimezoneOffset() * 60000;
+                            return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+                        })() : '',
                         questionIds: l.questions.map((q: any) => q.question.id)
                     })));
                 }
@@ -102,7 +106,10 @@ export default function EditExam({ params }: { params: Promise<{ id: string }> }
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: examName,
-                    levels: levels
+                    levels: levels.map(l => ({
+                        ...l,
+                        startTime: l.startTime ? new Date(l.startTime).toISOString() : null
+                    }))
                 })
             });
 
