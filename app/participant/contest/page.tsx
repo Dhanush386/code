@@ -149,6 +149,7 @@ function ContestContent() {
 
                         return {
                             ...qData,
+                            isPassed: !!lq.isPassed,
                             sampleInput: qData.sampleInput || visibleTestCases[0]?.input || '',
                             sampleOutput: qData.sampleOutput || visibleTestCases[0]?.expectedOutput || '',
                             difficulty: `LEVEL 0${level.levelNumber} - ${level.exam.name.toUpperCase()}`,
@@ -482,6 +483,13 @@ function ContestContent() {
                     // Check if the level was actually incremented by the server
                     if (subData.currentLevel > currentLevel) {
                         levelActuallyUnlocked = true;
+                    }
+
+                    // Update question status in state if passed
+                    if (passed === tCount && tCount > 0) {
+                        setAllQuestions(prev => prev.map((q, idx) =>
+                            idx === activeIndex ? { ...q, isPassed: true } : q
+                        ));
                     }
 
                     // Update local storage
@@ -1066,9 +1074,21 @@ function ContestContent() {
                                         <ShieldAlert size={60} />
                                     </div>
                                     <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Sync Incomplete</h2>
-                                    <p className="text-gray-500 font-bold italic text-sm mb-0 uppercase tracking-widest leading-relaxed">
+                                    <p className="text-gray-500 font-bold italic text-sm mb-6 uppercase tracking-widest leading-relaxed">
                                         Challenge mastered, but remaining node vulnerabilities detected. Complete all tasks to unlock the next phase.
                                     </p>
+
+                                    <div className="bg-orange-50/50 rounded-2xl p-6 border border-orange-100 text-left">
+                                        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-4 italic">Pending Synchronizations:</p>
+                                        <div className="space-y-3">
+                                            {allQuestions.filter(q => !q.isPassed).map(q => (
+                                                <div key={q.id} className="flex items-center gap-3 text-orange-800 font-bold italic text-sm uppercase">
+                                                    <div className="h-2 w-2 rounded-full bg-orange-400" />
+                                                    {q.title}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </>
                             )}
                         </motion.div>

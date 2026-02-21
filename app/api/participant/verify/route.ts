@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        // Fetch level data
         const level = await prisma.examLevel.findUnique({
             where: { accessCode },
             include: {
@@ -42,6 +43,28 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid access code' }, { status: 404 });
         }
 
+        // If participantId is provided, check which questions they've already passed
+        let questionsWithStatus = level.questions;
+        if (participantId) {
+            const passedSubmissions = await prisma.submission.findMany({
+                where: {
+                    participantId,
+                    status: 'PASSED',
+                    questionId: {
+                        in: level.questions.map((q: any) => q.questionId)
+                    }
+                },
+                select: { questionId: true }
+            });
+
+            const passedIds = new Set(passedSubmissions.map((s: any) => s.questionId));
+
+            questionsWithStatus = level.questions.map((lq: any) => ({
+                ...lq,
+                isPassed: passedIds.has(lq.questionId)
+            }));
+        }
+
         // Increment attempts on successful code entry
         if (participantId) {
             await prisma.participant.update({
@@ -50,8 +73,11 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // Return the level data
-        return NextResponse.json(level);
+        // Return the levels with status
+        return NextResponse.json({
+            ...level,
+            questions: questionsWithStatus
+        });
     } catch (error: any) {
         console.error('Verify code error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
