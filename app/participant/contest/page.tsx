@@ -487,8 +487,8 @@ function ContestContent() {
 
                     // Update question status in state if passed
                     if (passed === tCount && tCount > 0) {
-                        setAllQuestions(prev => prev.map((q, idx) =>
-                            idx === activeIndex ? { ...q, isPassed: true } : q
+                        setAllQuestions(prev => prev.map((q, sIdx) =>
+                            sIdx === activeIndex ? { ...q, isPassed: true } : q
                         ));
                     }
 
@@ -502,12 +502,19 @@ function ContestContent() {
                 }
             }
 
+            // Important: Use the latest pass information for UI logic
+            const updatedQuestions = allQuestions.map((q, qIdx) =>
+                qIdx === activeIndex ? { ...q, isPassed: q.isPassed || (passed === tCount && tCount > 0) } : q
+            );
+
             setIsSubmitting(false);
 
             if (passed === tCount && tCount > 0) {
                 setSubmissionResult('success');
 
-                if (levelActuallyUnlocked) {
+                const allPassedInPhase = updatedQuestions.every(q => q.isPassed);
+
+                if (levelActuallyUnlocked || allPassedInPhase) {
                     setTransitionStatus('phase');
                     setTimeout(() => {
                         localStorage.removeItem('activeExamCode');

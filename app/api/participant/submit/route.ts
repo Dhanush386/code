@@ -105,10 +105,18 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        if (isPassed) {
+            console.log(`[SUBMIT] Level progression check: PID=${participantId}, Level=${levelNumber}`);
+        }
+
         const updatedParticipant = await prisma.participant.update({
             where: { id: participantId },
             data: updateData
         });
+
+        if (isPassed && updatedParticipant.currentLevel > participant.currentLevel) {
+            console.log(`[SUBMIT] Level incremented: ${participant.currentLevel} -> ${updatedParticipant.currentLevel}`);
+        }
 
         return NextResponse.json({
             success: true,
