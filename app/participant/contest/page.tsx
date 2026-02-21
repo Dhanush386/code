@@ -59,6 +59,7 @@ function ContestContent() {
     const [lastSubmissionScore, setLastSubmissionScore] = useState(0);
     const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
     const [codeValue, setCodeValue] = useState(BOILERPLATES.python);
+    const [hasHiddenFailure, setHasHiddenFailure] = useState(false);
 
     const [allQuestions, setAllQuestions] = useState<any[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -416,6 +417,7 @@ function ContestContent() {
     const handleSubmit = async () => {
         setIsSubmitting(true);
         setSubmissionResult(null);
+        setHasHiddenFailure(false);
         setSubmissionProgress('Preparing vectors...');
 
         try {
@@ -442,6 +444,8 @@ function ContestContent() {
                 const data = await res.json();
                 if (data.status?.id === 3 && data.stdout?.trim() === tc.expectedOutput?.trim()) {
                     passed++;
+                } else if (tc.isHidden) {
+                    setHasHiddenFailure(true);
                 }
             }
 
@@ -838,9 +842,12 @@ function ContestContent() {
                                         <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl">
                                             <Zap size={40} />
                                         </div>
-                                        <div>
+                                        <div className="max-w-md">
                                             <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Partial Signal ({lastSubmissionScore}/{question.points || 10})</h3>
-                                            <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">{passCount}/{totalTests} protocols validated. Correction required for full sync.</p>
+                                            <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest leading-tight">
+                                                {passCount}/{totalTests} protocols validated.
+                                                {hasHiddenFailure && <span className="text-red-500 block mt-1 font-black">CRITICAL: HIDDEN TEST CASE(S) FAILED</span>}
+                                            </p>
                                         </div>
                                         <button onClick={() => setSubmissionResult(null)} className="ml-4 p-2 text-gray-400 hover:text-gray-600"><X size={20} /></button>
                                     </motion.div>
@@ -856,9 +863,12 @@ function ContestContent() {
                                         <div className="p-4 bg-red-50 text-red-600 rounded-2xl">
                                             <AlertTriangle size={40} />
                                         </div>
-                                        <div>
+                                        <div className="max-w-md">
                                             <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Signal Failed (0/{question.points || 10})</h3>
-                                            <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">No matching frequencies detected. Trace logic and retry.</p>
+                                            <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest leading-tight">
+                                                No matching frequencies detected.
+                                                {hasHiddenFailure && <span className="text-red-500 block mt-1 font-black">CRITICAL: HIDDEN TEST CASE(S) FAILED</span>}
+                                            </p>
                                         </div>
                                         <button onClick={() => setSubmissionResult(null)} className="ml-4 p-2 text-gray-400 hover:text-gray-600"><X size={20} /></button>
                                     </motion.div>
