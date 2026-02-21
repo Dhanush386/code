@@ -42,8 +42,8 @@ function ContestContent() {
     const code = searchParams.get('code');
 
     const [loading, setLoading] = useState(true);
-    const [timeRemaining, setTimeRemaining] = useState(1800); // 30 minutes in seconds
-    const timeRef = useRef<number>(1800);
+    const [timeRemaining, setTimeRemaining] = useState(0);
+    const timeRef = useRef<number>(0);
     const [currentLevel, setCurrentLevel] = useState(1);
     const [violationCount, setViolationCount] = useState(0);
     const [showWarning, setShowWarning] = useState(false);
@@ -162,17 +162,27 @@ function ContestContent() {
                     setSelectedLanguage(formattedQuestions[0].allowedLanguages[0]);
                     setCurrentLevel(level.levelNumber);
 
-                    // Session Recovery Check
-                    const pData = localStorage.getItem('participant');
-                    let initialTime = level.timeLimit * 60;
-                    if (pData) {
-                        const p = JSON.parse(pData);
-                        if (p.timeRemaining && p.timeRemaining > 0) {
-                            initialTime = p.timeRemaining;
-                            console.log(`Resuming session with ${initialTime}s remaining`);
+                    // Recovery: Level duration
+                    const levelLimitSeconds = level.timeLimit * 60;
+
+                    // Prioritize server-saved time from verify response, then localStorage, then default
+                    let recoveredTime = -1;
+
+                    if (level.timeRemaining && level.timeRemaining > 0) {
+                        recoveredTime = level.timeRemaining;
+                        console.log(`Resuming session with ${recoveredTime}s from SERVER`);
+                    } else {
+                        const pData = localStorage.getItem('participant');
+                        if (pData) {
+                            const p = JSON.parse(pData);
+                            if (p.timeRemaining && p.timeRemaining > 0) {
+                                recoveredTime = p.timeRemaining;
+                                console.log(`Resuming session with ${recoveredTime}s from LOCALSTORAGE`);
+                            }
                         }
                     }
 
+                    const initialTime = recoveredTime > 0 ? recoveredTime : levelLimitSeconds;
                     setTimeRemaining(initialTime);
                     timeRef.current = initialTime;
                 }
@@ -469,7 +479,7 @@ function ContestContent() {
                         questionId: question.id,
                         score: questScore,
                         levelNumber: currentLevel,
-                        timeTaken: 1800 - timeRemaining,
+                        timeTaken: (allQuestions[0]?.timeLimit || 30) * 60 - timeRemaining,
                         isPassed: passed === tCount && tCount > 0,
                         code: codeValue,
                         language: selectedLanguage

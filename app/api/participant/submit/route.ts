@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
     try {
-        const { participantId, questionId, score, levelNumber, timeTaken, isPassed, code, language } = await req.json();
+        const { participantId, questionId, score, levelNumber, timeTaken, timeRemaining, isPassed, code, language } = await req.json();
 
         if (!participantId || !questionId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -70,7 +70,8 @@ export async function POST(req: NextRequest) {
 
         let updateData: any = {
             score: finalScore,
-            totalTime: calculatedTotalTime
+            totalTime: calculatedTotalTime,
+            timeRemaining: timeRemaining !== undefined ? timeRemaining : undefined
         };
 
         // Only progress level if all test cases passed

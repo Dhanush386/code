@@ -45,24 +45,33 @@ export async function POST(req: NextRequest) {
 
         // If participantId is provided, check which questions they've already passed
         let questionsWithStatus = level.questions;
+        let participantTime = -1;
         if (participantId) {
-            const passedSubmissions = await prisma.submission.findMany({
-                where: {
-                    participantId,
-                    status: 'PASSED',
-                    questionId: {
-                        in: level.questions.map((q: any) => q.questionId)
-                    }
-                },
-                select: { questionId: true }
+            const participant = await prisma.participant.findUnique({
+                where: { id: participantId }
             });
 
-            const passedIds = new Set(passedSubmissions.map((s: any) => s.questionId));
+            if (participant) {
+                participantTime = participant.timeRemaining;
 
-            questionsWithStatus = level.questions.map((lq: any) => ({
-                ...lq,
-                isPassed: passedIds.has(lq.questionId)
-            }));
+                const passedSubmissions = await prisma.submission.findMany({
+                    where: {
+                        participantId,
+                        status: 'PASSED',
+                        questionId: {
+                            in: level.questions.map((q: any) => q.questionId)
+                        }
+                    },
+                    select: { questionId: true }
+                });
+
+                const passedIds = new Set(passedSubmissions.map((s: any) => s.questionId));
+
+                questionsWithStatus = level.questions.map((lq: any) => ({
+                    ...lq,
+                    isPassed: passedIds.has(lq.questionId)
+                }));
+            }
         }
 
         // Increment attempts on successful code entry
@@ -76,7 +85,8 @@ export async function POST(req: NextRequest) {
         // Return the levels with status
         return NextResponse.json({
             ...level,
-            questions: questionsWithStatus
+            questions: questionsWithStatus,
+            timeRemaining: participantTime
         });
     } catch (error: any) {
         console.error('Verify code error:', error);
