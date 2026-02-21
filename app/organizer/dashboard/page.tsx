@@ -26,24 +26,26 @@ export default function DashboardOverview() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const res = await fetch('/api/leaderboard');
-                const data = await res.json();
-                if (Array.isArray(data)) {
-                    setParticipants(data.slice(0, 5)); // Show top 5
+                // Fetch stats (questions, exams, teams, violations)
+                const statsRes = await fetch('/api/organizer/stats');
+                const statsData = await statsRes.json();
 
-                    // Update stats
-                    const totalViolations = data.reduce((acc, p) => acc + (p.violationCount || 0), 0);
-                    const registeredTeams = data.length;
-
+                if (!statsData.error) {
                     setStats(prev => prev.map(stat => {
-                        if (stat.label === 'Registered Teams') return { ...stat, value: registeredTeams.toString() };
-                        if (stat.label === 'Total Violations') return { ...stat, value: totalViolations.toString() };
+                        if (stat.label === 'Total Questions') return { ...stat, value: statsData.totalQuestions.toString() };
+                        if (stat.label === 'Active Exams') return { ...stat, value: statsData.totalExams.toString() };
+                        if (stat.label === 'Registered Teams') return { ...stat, value: statsData.registeredTeams.toString() };
+                        if (stat.label === 'Total Violations') return { ...stat, value: statsData.totalViolations.toString() };
                         return stat;
                     }));
                 }
 
-                // Fetch other stats (mocking or implementing if endpoints exist)
-                // For now, let's keep them dynamic from data if possible
+                // Fetch top 5 for preview
+                const lbRes = await fetch('/api/leaderboard');
+                const lbData = await lbRes.json();
+                if (Array.isArray(lbData)) {
+                    setParticipants(lbData.slice(0, 5));
+                }
             } catch (error) {
                 console.error('Failed to fetch dashboard stats:', error);
             }
