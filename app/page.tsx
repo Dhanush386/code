@@ -38,62 +38,60 @@ export default function LandingPage() {
 
                 {/* Action Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
-                    {/* Organizer Card */}
+                    {/* Unified Login Card */}
                     <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.5 }}
                         whileHover={{ y: -8 }}
-                        className="group relative"
+                        className="group relative md:col-span-1"
                     >
-                        <Link href="/organizer/login" className="block">
-                            <div className="bg-white border-2 border-gray-100 rounded-3xl p-8 h-full transition-all duration-300 group-hover:border-blue-500 group-hover:shadow-2xl group-hover:shadow-blue-100 flex flex-col items-start justify-between overflow-hidden">
-                                <div className="mb-8 p-4 bg-gray-50 rounded-2xl text-gray-600 transition-colors group-hover:bg-blue-50 group-hover:text-blue-600">
+                        <Link href="/login" className="block h-full">
+                            <div className="bg-white border-2 border-gray-100 rounded-[2.5rem] p-8 h-full transition-all duration-300 group-hover:border-indigo-500 group-hover:shadow-2xl group-hover:shadow-indigo-100 flex flex-col items-start justify-between overflow-hidden">
+                                <div className="mb-8 p-4 bg-gray-50 rounded-2xl text-gray-600 transition-colors group-hover:bg-indigo-50 group-hover:text-indigo-600">
                                     <Terminal size={40} strokeWidth={1.5} />
                                 </div>
                                 <div>
-                                    <h3 className="text-3xl font-bold mb-3 text-gray-900 leading-tight">Organizer</h3>
-                                    <p className="text-gray-500 font-medium mb-6">
-                                        Create questions, manage exams, and monitor the leaderboard in real-time.
+                                    <h3 className="text-3xl font-black italic tracking-tighter mb-3 text-gray-900 leading-tight uppercase">Portal Access</h3>
+                                    <p className="text-gray-500 font-bold italic mb-6">
+                                        Secure entry for both Organizers and Team Participants. Our smart portal routes you automatically.
                                     </p>
-                                    <div className="flex items-center gap-2 text-blue-600 font-bold group-hover:translate-x-1 transition-transform">
+                                    <div className="flex items-center gap-2 text-indigo-600 font-black italic uppercase tracking-widest text-sm group-hover:translate-x-1 transition-transform">
                                         Enter Dashboard <ChevronRight size={20} />
                                     </div>
                                 </div>
 
-                                {/* Decorative background icon */}
-                                <div className="absolute -bottom-6 -right-6 text-gray-100 opacity-20 -rotate-12 transition-transform group-hover:scale-110 group-hover:text-blue-200">
+                                <div className="absolute -bottom-6 -right-6 text-gray-100 opacity-20 -rotate-12 transition-transform group-hover:scale-110 group-hover:text-indigo-200">
                                     <Terminal size={120} />
                                 </div>
                             </div>
                         </Link>
                     </motion.div>
 
-                    {/* Participant Card */}
+                    {/* Registration Card */}
                     <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.5 }}
                         whileHover={{ y: -8 }}
-                        className="group relative"
+                        className="group relative md:col-span-1"
                     >
-                        <Link href="/participant/login" className="block">
-                            <div className="bg-white border-2 border-gray-100 rounded-3xl p-8 h-full transition-all duration-300 group-hover:border-indigo-500 group-hover:shadow-2xl group-hover:shadow-indigo-100 flex flex-col items-start justify-between overflow-hidden">
-                                <div className="mb-8 p-4 bg-gray-50 rounded-2xl text-gray-600 transition-colors group-hover:bg-indigo-50 group-hover:text-indigo-600">
+                        <Link href="/participant/login" className="block h-full">
+                            <div className="bg-indigo-600 border-2 border-transparent rounded-[2.5rem] p-8 h-full transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-indigo-200 flex flex-col items-start justify-between overflow-hidden">
+                                <div className="mb-8 p-4 bg-white/10 rounded-2xl text-white transition-colors">
                                     <Users size={40} strokeWidth={1.5} />
                                 </div>
-                                <div>
-                                    <h3 className="text-3xl font-bold mb-3 text-gray-900 leading-tight">Participant</h3>
-                                    <p className="text-gray-500 font-medium mb-6">
-                                        Register your team, join the relay, and solve challenges to climb the ranks.
+                                <div className="text-white">
+                                    <h3 className="text-3xl font-black italic tracking-tighter mb-3 leading-tight uppercase">Create Team</h3>
+                                    <p className="text-indigo-100 font-bold italic mb-6">
+                                        Not registered yet? Deploy your team registration and join the Code Relay marathon.
                                     </p>
-                                    <div className="flex items-center gap-2 text-indigo-600 font-bold group-hover:translate-x-1 transition-transform">
-                                        Join the Contest <ChevronRight size={20} />
+                                    <div className="flex items-center gap-2 text-white font-black italic uppercase tracking-widest text-sm group-hover:translate-x-1 transition-transform">
+                                        Register Now <ChevronRight size={20} />
                                     </div>
                                 </div>
 
-                                {/* Decorative background icon */}
-                                <div className="absolute -bottom-6 -right-6 text-gray-100 opacity-20 -rotate-12 transition-transform group-hover:scale-110 group-hover:text-indigo-200">
+                                <div className="absolute -bottom-6 -right-6 text-white/5 opacity-20 -rotate-12 transition-transform group-hover:scale-110 group-hover:text-white/10">
                                     <Users size={120} />
                                 </div>
                             </div>
