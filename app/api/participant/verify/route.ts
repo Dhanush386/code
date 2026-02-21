@@ -15,9 +15,9 @@ export async function POST(req: NextRequest) {
                 where: { id: participantId }
             });
 
-            if (participant && participant.loginAttempts > 2) {
+            if (participant && participant.loginAttempts >= 2) {
                 return NextResponse.json({
-                    error: 'Maximum login attempts (2) reached. Please contact proctors if this is an error.'
+                    error: 'Maximum entry attempts (2) reached for this code. Please contact proctors if you need further assistance.'
                 }, { status: 403 });
             }
         }

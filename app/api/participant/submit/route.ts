@@ -96,9 +96,10 @@ export async function POST(req: NextRequest) {
 
                     // If they've passed all questions in this level, move them up
                     if (passedQuestions.length === levelQuestionIds.length && levelQuestionIds.length > 0) {
-                        updateData.currentLevel = participant.currentLevel === levelNumber
-                            ? levelNumber + 1
-                            : participant.currentLevel;
+                        if (participant.currentLevel === levelNumber) {
+                            updateData.currentLevel = levelNumber + 1;
+                            updateData.loginAttempts = 0; // Reset for next access code
+                        }
                     }
                 }
             }
