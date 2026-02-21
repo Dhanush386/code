@@ -220,7 +220,20 @@ function ContestContent() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const handleTimeUp = () => {
+    const handleTimeUp = async () => {
+        if (showTimeUpModal) return;
+
+        // Auto-submit current work if possible
+        if (question && codeValue && !isSubmitting && !loading) {
+            console.log("Time expired. Triggering auto-submission...");
+            try {
+                // Trigger submission one last time
+                await handleSubmit();
+            } catch (err) {
+                console.error("Auto-submission failed:", err);
+            }
+        }
+
         localStorage.removeItem('activeExamCode');
         setShowTimeUpModal(true);
     };

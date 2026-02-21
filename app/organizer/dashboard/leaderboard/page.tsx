@@ -127,7 +127,12 @@ export default function Leaderboard() {
                                     <td className="px-8 py-6 text-center">
                                         <div className="flex items-center justify-center gap-2 text-gray-400 font-bold italic text-sm">
                                             <Clock size={14} />
-                                            {Math.floor(team.totalTime / 60)}:{(team.totalTime % 60).toString().padStart(2, '0')}
+                                            {(() => {
+                                                const h = Math.floor(team.totalTime / 3600);
+                                                const m = Math.floor((team.totalTime % 3600) / 60);
+                                                const s = team.totalTime % 60;
+                                                return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                                            })()}
                                         </div>
                                     </td>
                                     <td className="px-8 py-6 text-right">
