@@ -64,13 +64,20 @@ export async function PATCH(
         const body = await req.json();
         const { name, levels } = body;
 
-        const updatedExam = await prisma.$transaction(async (tx: any) => {
+        if (!name || !levels || !Array.isArray(levels)) {
+            return NextResponse.json({ error: 'Invalid update data. Name and levels array are required.' }, { status: 400 });
+        }
+
+        console.log(`[EXAM_UPDATE] Updating exam ${id}: ${name}`);
+
+        const updatedExam = await prisma.$transaction(async (tx) => {
             // 1. Delete existing levels (cascades to QuestionOnExam)
+            // We use deleteMany to clear any existing levels for this exam
             await tx.examLevel.deleteMany({
                 where: { examId: id }
             });
 
-            // 2. Update exam and recreate levels
+            // 2. Update exam name and recreate levels
             return await tx.exam.update({
                 where: { id },
                 data: {
@@ -81,7 +88,7 @@ export async function PATCH(
                             accessCode: level.accessCode,
                             timeLimit: level.timeLimit,
                             questions: {
-                                create: level.questionIds.map((qid: string) => ({
+                                create: (level.questionIds || []).map((qid: string) => ({
                                     question: { connect: { id: qid } }
                                 }))
                             }
@@ -100,14 +107,25 @@ export async function PATCH(
                     }
                 }
             });
+        }, {
+            timeout: 10000 // Increase timeout for complex transactions
         });
 
         return NextResponse.json(updatedExam);
     } catch (error: any) {
-        console.error('Exam update error:', error);
+        console.error('CRITICAL: Exam update failure:', error);
+
+        // Return a more descriptive error if it's a Prisma unique constraint violation
+        if (error.code === 'P2002') {
+            return NextResponse.json({
+                error: 'Update Conflict: One or more access codes are already in use. Please regenerate codes and retry.',
+                details: error.meta
+            }, { status: 409 });
+        }
+
         return NextResponse.json({
-            error: error.message,
-            stack: error.stack
+            error: error.message || 'Internal Server Error during update',
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         }, { status: 500 });
     }
 }
