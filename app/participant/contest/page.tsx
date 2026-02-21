@@ -198,6 +198,8 @@ function ContestContent() {
 
     // Timer Logic
     useEffect(() => {
+        if (loading) return;
+
         if (timeRemaining <= 0) {
             handleTimeUp();
             return;
@@ -210,7 +212,7 @@ function ContestContent() {
             });
         }, 1000);
         return () => clearInterval(timer);
-    }, [timeRemaining]);
+    }, [timeRemaining, loading]);
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
