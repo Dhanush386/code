@@ -3,9 +3,9 @@ import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
     try {
-        const { teamName, collegeName, members, regNos } = await req.json();
+        const { teamName, collegeName, members, regNos, password } = await req.json();
 
-        if (!teamName || !collegeName || !members || !regNos) {
+        if (!teamName || !collegeName || !members || !regNos || !password) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
 
@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
                 collegeName,
                 members,
                 regNos,
+                password,
                 lastActive: new Date()
             }
         });

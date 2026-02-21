@@ -31,6 +31,7 @@ model Participant {
   loginAttempts  Int               @default(0)
   timeRemaining  Int               @default(-1)
   regNos         String            @default("") // Comma-separated registration numbers
+  password       String            @default("")
   lastActive     DateTime          @default(now())
   submissions    Submission[]
   exams          ParticipantExam[]

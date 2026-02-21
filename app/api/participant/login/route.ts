@@ -3,10 +3,10 @@ import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
     try {
-        const { teamName } = await req.json();
+        const { teamName, password } = await req.json();
 
-        if (!teamName) {
-            return NextResponse.json({ error: 'Team name is required' }, { status: 400 });
+        if (!teamName || !password) {
+            return NextResponse.json({ error: 'Team name and password are required' }, { status: 400 });
         }
 
         const participant = await prisma.participant.findUnique({
@@ -15,6 +15,10 @@ export async function POST(req: NextRequest) {
 
         if (!participant) {
             return NextResponse.json({ error: 'Team not found. Please register first.' }, { status: 404 });
+        }
+
+        if (participant.password !== password) {
+            return NextResponse.json({ error: 'Invalid team password' }, { status: 401 });
         }
 
         // Update last active on login

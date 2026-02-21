@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, School, UserPlus, ArrowRight, Loader2, Code, AlertCircle, CheckCircle2, Sparkles } from 'lucide-react';
+import { Users, School, UserPlus, ArrowRight, Loader2, Code, AlertCircle, CheckCircle2, Sparkles, ShieldCheck } from 'lucide-react';
 
 export default function ParticipantPortal() {
     const [isRegistering, setIsRegistering] = useState(true);
@@ -20,9 +20,11 @@ export default function ParticipantPortal() {
     const [collegeName, setCollegeName] = useState('');
     const [members, setMembers] = useState('');
     const [regNos, setRegNos] = useState('');
+    const [password, setPassword] = useState('');
 
     // Login states
     const [loginTeamName, setLoginTeamName] = useState('');
+    const [loginPassword, setLoginPassword] = useState('');
 
     const handleAction = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -33,7 +35,7 @@ export default function ParticipantPortal() {
                 const res = await fetch('/api/participant/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ teamName, collegeName, members, regNos })
+                    body: JSON.stringify({ teamName, collegeName, members, regNos, password })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Registration failed');
@@ -47,7 +49,7 @@ export default function ParticipantPortal() {
                 const res = await fetch('/api/participant/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ teamName: loginTeamName })
+                    body: JSON.stringify({ teamName: loginTeamName, password: loginPassword })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Login failed');
@@ -178,6 +180,23 @@ export default function ParticipantPortal() {
                                                 />
                                             </div>
                                         </div>
+
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-[0.2em] italic">Access Password</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-600 transition-colors">
+                                                    <ShieldCheck size={18} />
+                                                </div>
+                                                <input
+                                                    type="password"
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
+                                                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-bold text-gray-800 italic"
+                                                    placeholder="••••••••"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
                                     </motion.div>
                                 ) : (
                                     <motion.div
@@ -199,6 +218,23 @@ export default function ParticipantPortal() {
                                                     onChange={(e) => setLoginTeamName(e.target.value)}
                                                     className="w-full pl-12 pr-6 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-bold text-gray-800 italic"
                                                     placeholder="CYBER_KNIGHTS"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 mb-2 ml-1 uppercase tracking-[0.2em] italic">Team Password</label>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-600 transition-colors">
+                                                    <ShieldCheck size={18} />
+                                                </div>
+                                                <input
+                                                    type="password"
+                                                    value={loginPassword}
+                                                    onChange={(e) => setLoginPassword(e.target.value)}
+                                                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border-2 border-transparent rounded-[1.25rem] focus:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-bold text-gray-800 italic"
+                                                    placeholder="••••••••"
                                                     required
                                                 />
                                             </div>
