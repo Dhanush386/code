@@ -13,7 +13,8 @@ import {
     LogOut,
     ChevronRight,
     Terminal,
-    BarChart3
+    BarChart3,
+    Clock
 } from 'lucide-react';
 
 const navItems = [
@@ -111,9 +112,12 @@ export default function OrganizerLayout({
             {/* Main Content */}
             <main className="flex-1 ml-72 min-h-screen relative">
                 <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex items-center justify-between">
-                    <h2 className="text-sm font-black italic text-gray-400 uppercase tracking-[0.2em]">
-                        {navItems.find(i => i.href === pathname)?.name || 'Dashboard'}
-                    </h2>
+                    <div className="flex items-center gap-6">
+                        <LiveClock />
+                        <h2 className="text-sm font-black italic text-gray-400 uppercase tracking-[0.2em]">
+                            {navItems.find(i => i.href === pathname)?.name || 'Dashboard'}
+                        </h2>
+                    </div>
                     <div className="flex items-center gap-4">
                         <div className="text-right">
                             <p className="text-xs font-black italic text-gray-900 leading-none">Admin Core</p>
@@ -128,6 +132,30 @@ export default function OrganizerLayout({
                     {children}
                 </div>
             </main>
+        </div>
+    );
+}
+
+function LiveClock() {
+    const [time, setTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+            <Clock size={14} className="text-blue-500" />
+            <span className="text-xs font-black italic text-gray-900 tabular-nums uppercase">
+                {time.toLocaleString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                })}
+            </span>
         </div>
     );
 }

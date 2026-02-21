@@ -31,6 +31,7 @@ interface Exam {
                 title: string;
             }
         }[];
+        startTime?: string;
     }[];
 }
 
@@ -153,6 +154,11 @@ export default function ExamBank() {
                                             <div className="flex items-center gap-3 text-[9px] font-bold text-gray-400 italic uppercase">
                                                 <span className="flex items-center gap-1"><Clock size={10} /> {level.timeLimit}m</span>
                                                 <span className="flex items-center gap-1"><BookOpen size={10} /> {level.questions.length} problems</span>
+                                                {level.startTime && (
+                                                    <span className="flex items-center gap-1 text-emerald-500">
+                                                        <Clock size={10} /> Opens: {new Date(level.startTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
