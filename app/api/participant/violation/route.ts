@@ -21,8 +21,7 @@ export async function POST(req: NextRequest) {
         }
 
         // 2. Calculate penalty (2 marks deduction)
-        // Ensure score doesn't go below 0
-        const newScore = Math.max(0, participant.score - 2);
+        const newScore = participant.score - 2;
         const newViolationCount = participant.violationCount + 1;
 
         console.log(`[VIOLATION] Participant ${participant.teamName} (${participantId}): ${reason}. Penalty applied. Old Score: ${participant.score}, New Score: ${newScore}`);
