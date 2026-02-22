@@ -16,6 +16,8 @@ interface Submission {
     id: string;
     levelNumber: number;
     score: number;
+    timeTaken: number;
+    questionId: string;
 }
 
 interface Participant {
@@ -32,9 +34,36 @@ export default function MarksDashboard() {
     const [loading, setLoading] = useState(true);
 
     const getPhaseMarks = (submissions: Submission[] = [], level: number) => {
-        return submissions
-            .filter(s => s.levelNumber === level)
-            .reduce((sum, s) => sum + s.score, 0);
+        const bestScores: Record<string, number> = {};
+        submissions.filter(s => s.levelNumber === level).forEach(s => {
+            bestScores[s.questionId] = Math.max(bestScores[s.questionId] || 0, s.score);
+        });
+        return Object.values(bestScores).reduce((sum, score) => sum + score, 0);
+    };
+
+    const getPhaseDuration = (submissions: Submission[] = [], level: number) => {
+        const bestScores: Record<string, number> = {};
+        const earliestBestTime: Record<string, number> = {};
+
+        // Find best score per question in this level
+        submissions.filter(s => s.levelNumber === level).forEach(s => {
+            if (s.score > (bestScores[s.questionId] || 0)) {
+                bestScores[s.questionId] = s.score;
+                earliestBestTime[s.questionId] = s.timeTaken;
+            } else if (s.score === bestScores[s.questionId] && s.score > 0) {
+                // If same score, keep the earliest one (Prisma orderBy createdAt: asc in leaderboard API would help)
+                // For safety, we assume the earliest best is what we want
+                // Note: The leaderboard API already has submissions, we just need to aggregate
+            }
+        });
+
+        return Object.values(earliestBestTime).reduce((sum, time) => sum + time, 0);
+    };
+
+    const formatDuration = (seconds: number) => {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     };
 
     useEffect(() => {
@@ -124,10 +153,19 @@ export default function MarksDashboard() {
                                     </td>
                                     {[1, 2, 3].map(level => {
                                         const marks = getPhaseMarks(team.submissions, level);
+                                        const duration = getPhaseDuration(team.submissions, level);
                                         return (
                                             <td key={level} className="px-8 py-6 text-center">
-                                                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl font-black italic text-lg ${marks > 0 ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-gray-50 text-gray-300'}`}>
-                                                    {marks.toString().padStart(3, '0')}
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-xl font-black italic text-base ${marks > 0 ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-gray-50 text-gray-300'}`}>
+                                                        {marks.toString().padStart(3, '0')}
+                                                    </div>
+                                                    {marks > 0 && (
+                                                        <div className="flex items-center gap-1 text-[9px] font-black italic text-gray-400 uppercase tracking-widest">
+                                                            <Clock size={10} />
+                                                            {formatDuration(duration)}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </td>
                                         );
