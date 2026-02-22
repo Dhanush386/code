@@ -60,6 +60,7 @@ function ContestContent() {
     const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
     const [codeValue, setCodeValue] = useState(BOILERPLATES.python);
     const [hasHiddenFailure, setHasHiddenFailure] = useState(false);
+    const [executedCount, setExecutedCount] = useState(0);
 
     const [allQuestions, setAllQuestions] = useState<any[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -444,6 +445,8 @@ function ContestContent() {
         setIsSubmitting(true);
         setSubmissionResult(null);
         setHasHiddenFailure(false);
+        setPassCount(0);
+        setExecutedCount(0);
         setSubmissionProgress('Preparing vectors...');
 
         try {
@@ -468,8 +471,10 @@ function ContestContent() {
                 });
 
                 const data = await res.json();
+                setExecutedCount(i + 1);
                 if (data.status?.id === 3 && data.stdout?.trim() === tc.expectedOutput?.trim()) {
                     passed++;
+                    setPassCount(passed);
                 } else if (tc.isHidden) {
                     setHasHiddenFailure(true);
                 }
@@ -834,11 +839,56 @@ function ContestContent() {
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
-                                        className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50"
+                                        className="absolute inset-0 bg-white/95 backdrop-blur-md flex flex-col items-center justify-center z-50 p-12"
                                     >
-                                        <Loader2 className="text-indigo-500 animate-spin mb-6" size={60} />
-                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Evaluating Vector...</h3>
-                                        <p className="text-blue-400 font-bold italic text-xs uppercase tracking-widest mt-2">{submissionProgress}</p>
+                                        <div className="w-full max-w-md space-y-8">
+                                            {/* Header */}
+                                            <div className="flex items-center gap-3 text-orange-600">
+                                                <motion.div
+                                                    animate={{ rotate: 360 }}
+                                                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                                >
+                                                    <Clock size={24} />
+                                                </motion.div>
+                                                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-gray-950">Processing...</h3>
+                                            </div>
+
+                                            {/* Stats Row */}
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-bold text-gray-500 uppercase tracking-widest italic">Testcases Passed</span>
+                                                <span className="text-lg font-black italic text-orange-500">{passCount}/{totalTests}</span>
+                                            </div>
+
+                                            {/* Progress Bar Container */}
+                                            <div className="relative h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-50">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${(executedCount / totalTests) * 100}%` }}
+                                                    className="absolute inset-y-0 left-0 bg-blue-500 rounded-full"
+                                                />
+                                            </div>
+
+                                            {/* Footer Card */}
+                                            <div className="bg-white rounded-[1.5rem] p-6 border-2 border-gray-50 shadow-sm flex items-center justify-between">
+                                                <div className="space-y-1">
+                                                    <p className="text-2xl font-black italic text-orange-500 tracking-tight">
+                                                        {executedCount}/{totalTests} Testcase Executed
+                                                    </p>
+                                                </div>
+                                                <div className="h-10 w-10 relative">
+                                                    <motion.div
+                                                        animate={{ rotate: 360 }}
+                                                        transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                                                        className="absolute inset-0 border-4 border-blue-100 rounded-full"
+                                                    />
+                                                    <motion.div
+                                                        animate={{ rotate: 360 }}
+                                                        transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                                                        className="absolute inset-0 border-4 border-blue-400 border-t-transparent rounded-full"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </motion.div>
                                 )}
 
