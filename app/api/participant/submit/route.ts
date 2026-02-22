@@ -56,13 +56,26 @@ export async function POST(req: NextRequest) {
         });
         const calculatedBaseScore = allBestSubmissions.reduce((acc, curr) => acc + (curr._max.score || 0), 0);
 
-        // Calculate total time: Sum of (Max timeTaken per Level)
-        const levelMaxTimes = await prisma.submission.groupBy({
-            by: ['levelNumber'],
-            where: { participantId },
-            _max: { timeTaken: true }
-        });
-        const calculatedTotalTime = levelMaxTimes.reduce((acc, curr) => acc + (curr._max.timeTaken || 0), 0);
+        // Calculate total time robustly: Sum of (Max timeTaken among Earliest Best Submissions per level)
+        const levelDurations: Record<number, number> = {};
+        for (const best of allBestSubmissions) {
+            if (!best._max.score || best._max.score <= 0) continue;
+
+            const earliestBest = await prisma.submission.findFirst({
+                where: {
+                    participantId,
+                    questionId: best.questionId,
+                    score: best._max.score
+                },
+                orderBy: { createdAt: 'asc' }
+            });
+
+            if (earliestBest) {
+                const lvl = earliestBest.levelNumber;
+                levelDurations[lvl] = Math.max(levelDurations[lvl] || 0, earliestBest.timeTaken);
+            }
+        }
+        const calculatedTotalTime = Object.values(levelDurations).reduce((acc, curr) => acc + curr, 0);
 
         // Apply penalties to the base score
         // Each violation deducts 2 points
