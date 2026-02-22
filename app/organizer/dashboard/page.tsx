@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Users, BookOpen, Trophy, Plus, ArrowUpRight, Clock, ShieldAlert } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { LayoutDashboard, Users, BookOpen, Trophy, Plus, ArrowUpRight, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 
 interface Participant {
@@ -16,6 +17,7 @@ interface Participant {
 
 export default function DashboardOverview() {
     const [participants, setParticipants] = useState<Participant[]>([]);
+    const [fullParticipants, setFullParticipants] = useState<Participant[]>([]);
     const [stats, setStats] = useState([
         { label: 'Total Questions', value: '0', icon: BookOpen, color: 'text-blue-500', bg: 'bg-blue-50' },
         { label: 'Active Exams', value: '0', icon: LayoutDashboard, color: 'text-indigo-500', bg: 'bg-indigo-50' },
@@ -40,10 +42,11 @@ export default function DashboardOverview() {
                     }));
                 }
 
-                // Fetch top 5 for preview
+                // Fetch full leaderboard for graph and preview
                 const lbRes = await fetch('/api/leaderboard');
                 const lbData = await lbRes.json();
                 if (Array.isArray(lbData)) {
+                    setFullParticipants(lbData);
                     setParticipants(lbData.slice(0, 5));
                 }
             } catch (error) {
@@ -55,6 +58,15 @@ export default function DashboardOverview() {
         const interval = setInterval(fetchDashboardData, 10000);
         return () => clearInterval(interval);
     }, []);
+
+    // Prepare data for the graph (Top 10)
+    const graphData = fullParticipants
+        .slice(0, 10)
+        .map(p => ({
+            name: p.teamName.length > 12 ? p.teamName.substring(0, 10) + '..' : p.teamName,
+            score: p.score,
+            fullName: p.teamName
+        }));
 
     return (
         <div className="space-y-10">
@@ -101,46 +113,103 @@ export default function DashboardOverview() {
                 ))}
             </div>
 
-            {/* Recent Activity / Leaderboard Preview */}
-            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 p-10">
-                <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-xl font-black italic tracking-tight text-gray-950 uppercase">Live Leaderboard Preview</h3>
-                    <Link href="/organizer/dashboard/leaderboard" className="text-sm font-black italic text-blue-600 uppercase tracking-widest hover:underline">View Full <ArrowUpRight size={14} className="inline" /></Link>
+            {/* Analytics Graph Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 p-10">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-xl font-black italic tracking-tight text-gray-950 uppercase">Performance Matrix</h3>
+                            <p className="text-[10px] font-bold text-gray-400 italic uppercase tracking-widest mt-1">Live scoring distribution across all units</p>
+                        </div>
+                        <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase italic tracking-widest">
+                            Top 10 Nodes
+                        </div>
+                    </div>
+
+                    <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={graphData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
+                                    interval={0}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
+                                />
+                                <Tooltip
+                                    cursor={{ fill: '#f8fafc' }}
+                                    content={({ active, payload }) => {
+                                        if (active && payload && payload.length) {
+                                            return (
+                                                <div className="bg-gray-950 p-4 rounded-2xl shadow-2xl border border-gray-800">
+                                                    <p className="text-[10px] font-black text-gray-500 uppercase italic mb-1">{payload[0].payload.fullName}</p>
+                                                    <p className="text-lg font-black italic text-white uppercase tracking-tighter">
+                                                        Points: <span className="text-blue-400">{payload[0].value}</span>
+                                                    </p>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    }}
+                                />
+                                <Bar
+                                    dataKey="score"
+                                    radius={[8, 8, 8, 8]}
+                                    barSize={32}
+                                >
+                                    {graphData.map((entry, index) => (
+                                        <Cell
+                                            key={`cell-${index}`}
+                                            fill={index === 0 ? '#2563eb' : '#94a3b8'}
+                                            fillOpacity={1 - (index * 0.08)}
+                                        />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
 
-                {participants.length > 0 ? (
-                    <div className="overflow-hidden bg-gray-50/50 rounded-3xl">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b border-gray-100">
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase italic">Team</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase italic text-center">Score</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-red-400 uppercase italic text-center">Violations</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {participants.map((team) => (
-                                    <tr key={team.id} className="border-b border-gray-50 last:border-0 hover:bg-white transition-colors">
-                                        <td className="px-6 py-4">
-                                            <p className="font-black italic text-gray-900 uppercase text-sm">{team.teamName}</p>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="font-black italic text-blue-600">{team.score.toString().padStart(4, '0')}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center text-red-500 font-bold italic">
-                                            {(team.violationCount || 0).toString().padStart(2, '0')}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                {/* Recent Activity / Leaderboard Preview (Compact) */}
+                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/40 p-10">
+                    <div className="flex items-center justify-between mb-8">
+                        <h3 className="text-xl font-black italic tracking-tight text-gray-950 uppercase">Top 5</h3>
+                        <Link href="/organizer/dashboard/leaderboard" className="text-[10px] font-black italic text-blue-600 uppercase tracking-widest hover:underline">Full LB <ArrowUpRight size={12} className="inline ml-1" /></Link>
                     </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-                        <Trophy size={60} className="mb-4 opacity-10" />
-                        <p className="font-bold italic uppercase tracking-widest text-xs">No active teams detected</p>
-                    </div>
-                )}
+
+                    {participants.length > 0 ? (
+                        <div className="space-y-4">
+                            {participants.map((team, idx) => (
+                                <div key={team.id} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl hover:bg-white border border-transparent hover:border-gray-100 transition-all group">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-gray-950 text-white flex items-center justify-center text-[10px] font-black italic">
+                                            {String(idx + 1).padStart(2, '0')}
+                                        </div>
+                                        <div>
+                                            <p className="font-black italic text-gray-900 uppercase text-xs line-clamp-1">{team.teamName}</p>
+                                            <p className="text-[8px] font-bold text-gray-400 italic uppercase tracking-widest">{team.collegeName}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm font-black italic text-blue-600">{team.score.toString().padStart(3, '0')}</p>
+                                        <p className="text-[8px] font-bold text-red-500 italic uppercase tracking-widest">v: {team.violationCount || 0}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                            <Trophy size={60} className="mb-4 opacity-10" />
+                            <p className="font-bold italic uppercase tracking-widest text-xs text-center">No active teams</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
