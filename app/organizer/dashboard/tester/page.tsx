@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
 import {
     Play,
     Search,
@@ -34,7 +35,10 @@ interface TestCaseResult {
 
 import { Sun, Moon, Settings as SettingsIcon } from 'lucide-react';
 
-export default function ProblemTester() {
+function TesterContent() {
+    const searchParams = useSearchParams();
+    const targetId = searchParams.get('id');
+
     const [questions, setQuestions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -52,12 +56,24 @@ export default function ProblemTester() {
             .then(data => {
                 setQuestions(data);
                 setLoading(false);
+
+                // Handle pre-selection from search params
+                if (targetId && Array.isArray(data)) {
+                    const target = data.find((q: any) => q.id === targetId);
+                    if (target) {
+                        handleQuestionSelect(target);
+                    }
+                }
             });
-    }, []);
+    }, [targetId]);
 
     const handleQuestionSelect = (q: any) => {
         setSelectedQuestion(q);
-        setSourceCode(getDefaultCode(selectedLanguage));
+        // Language fallback logic
+        const allowed = q.languages ? q.languages.split(',').map((l: string) => l.trim()) : LANGUAGES;
+        const lang = allowed.includes(selectedLanguage) ? selectedLanguage : allowed[0];
+        setSelectedLanguage(lang);
+        setSourceCode(getDefaultCode(lang));
         setTestResults([]);
         setOverallStatus('idle');
     };
@@ -419,5 +435,17 @@ export default function ProblemTester() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function ProblemTester() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="animate-spin text-blue-500" size={40} />
+            </div>
+        }>
+            <TesterContent />
+        </Suspense>
     );
 }

@@ -149,9 +149,12 @@ export default function QuestionBank() {
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
-                                    <button className="flex items-center gap-1 text-xs font-black italic text-gray-400 group-hover:text-blue-600 transition-colors uppercase tracking-widest">
-                                        Details <ChevronRight size={14} />
-                                    </button>
+                                    <Link
+                                        href={`/organizer/dashboard/tester?id=${question.id}`}
+                                        className="flex items-center gap-1 text-xs font-black italic text-gray-400 hover:text-blue-500 transition-colors uppercase tracking-widest group/link"
+                                    >
+                                        Details <ChevronRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
+                                    </Link>
                                 </div>
                             </div>
 
