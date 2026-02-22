@@ -45,6 +45,7 @@ function ContestContent() {
     const [timeRemaining, setTimeRemaining] = useState(0);
     const timeRef = useRef<number>(0);
     const [currentLevel, setCurrentLevel] = useState(1);
+    const [levelTimeLimit, setLevelTimeLimit] = useState(30); // Default 30 mins
     const [violationCount, setViolationCount] = useState(0);
     const [showWarning, setShowWarning] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState('python');
@@ -163,6 +164,7 @@ function ContestContent() {
                     setQuestion(formattedQuestions[0]);
                     setSelectedLanguage(formattedQuestions[0].allowedLanguages[0]);
                     setCurrentLevel(level.levelNumber);
+                    setLevelTimeLimit(level.timeLimit || 30);
 
                     // Recovery: Level duration
                     const levelLimitSeconds = level.timeLimit * 60;
@@ -504,7 +506,7 @@ function ContestContent() {
                         questionId: question.id,
                         score: questScore,
                         levelNumber: currentLevel,
-                        timeTaken: (allQuestions[0]?.timeLimit || 30) * 60 - timeRemaining,
+                        timeTaken: (levelTimeLimit || 30) * 60 - timeRemaining,
                         isPassed: passed === tCount && tCount > 0,
                         code: codeValue,
                         language: selectedLanguage
