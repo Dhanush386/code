@@ -61,6 +61,7 @@ function ContestContent() {
     const [codeValue, setCodeValue] = useState(BOILERPLATES.python);
     const [hasHiddenFailure, setHasHiddenFailure] = useState(false);
     const [executedCount, setExecutedCount] = useState(0);
+    const [failCount, setFailCount] = useState(0);
 
     const [allQuestions, setAllQuestions] = useState<any[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -446,6 +447,7 @@ function ContestContent() {
         setSubmissionResult(null);
         setHasHiddenFailure(false);
         setPassCount(0);
+        setFailCount(0);
         setExecutedCount(0);
         setSubmissionProgress('Preparing vectors...');
 
@@ -475,8 +477,11 @@ function ContestContent() {
                 if (data.status?.id === 3 && data.stdout?.trim() === tc.expectedOutput?.trim()) {
                     passed++;
                     setPassCount(passed);
-                } else if (tc.isHidden) {
-                    setHasHiddenFailure(true);
+                } else {
+                    setFailCount(prev => prev + 1);
+                    if (tc.isHidden) {
+                        setHasHiddenFailure(true);
+                    }
                 }
             }
 
@@ -854,9 +859,15 @@ function ContestContent() {
                                             </div>
 
                                             {/* Stats Row */}
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm font-bold text-gray-500 uppercase tracking-widest italic">Testcases Passed</span>
-                                                <span className="text-lg font-black italic text-orange-500">{passCount}/{totalTests}</span>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-bold text-gray-500 uppercase tracking-widest italic">Testcases Passed</span>
+                                                    <span className="text-lg font-black italic text-emerald-500">{passCount}/{totalTests}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-bold text-gray-500 uppercase tracking-widest italic">Testcases Failed</span>
+                                                    <span className="text-lg font-black italic text-red-500">{failCount}/{totalTests}</span>
+                                                </div>
                                             </div>
 
                                             {/* Progress Bar Container */}
