@@ -24,6 +24,7 @@ interface Participant {
     violationCount: number;
     isStarted: boolean;
     lastActive: string;
+    regNos?: string;
 }
 
 export default function ParticipantsMonitor() {
@@ -102,6 +103,11 @@ export default function ParticipantsMonitor() {
                             <div className="mb-6">
                                 <h3 className="text-2xl font-black italic tracking-tighter text-gray-950 uppercase line-clamp-1">{team.teamName}</h3>
                                 <p className="text-[10px] font-bold text-gray-400 italic uppercase tracking-widest mt-1">{team.collegeName}</p>
+                                {team.regNos && (
+                                    <p className="text-[10px] font-black text-indigo-500 italic uppercase tracking-widest mt-2">
+                                        Reg: {team.regNos}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="p-4 bg-gray-50 rounded-2xl mb-6">
