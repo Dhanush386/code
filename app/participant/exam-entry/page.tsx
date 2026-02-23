@@ -117,8 +117,9 @@ export default function ExamEntry() {
                             <div className="relative group">
                                 <input
                                     type="password"
+                                    inputMode="numeric"
                                     value={examCode}
-                                    onChange={(e) => setExamCode(e.target.value.toUpperCase())}
+                                    onChange={(e) => setExamCode(e.target.value.replace(/[^0-9]/g, ''))}
                                     className="w-full px-8 py-6 bg-gray-50 border-2 border-transparent rounded-3xl focus:bg-white focus:border-indigo-600 transition-all outline-none font-black text-3xl text-center tracking-[0.5em] text-indigo-600 italic placeholder:text-gray-100"
                                     placeholder="XXXXXX"
                                     maxLength={6}
