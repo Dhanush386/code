@@ -187,7 +187,7 @@ export default function ParticipantPortal() {
                 <div className="mt-10 flex flex-col items-center gap-4">
                     <button
                         onClick={() => router.push('/')}
-                        className="text-xs font-black text-gray-400 hover:text-gray-600 transition-colors tracking-[0.3em] uppercase italic bg-white px-6 py-2 rounded-full border border-gray-100 shadow-sm"
+                        className="text-xs font-black text-red-600 hover:text-red-700 transition-colors tracking-[0.3em] uppercase italic bg-white px-6 py-2 rounded-full border border-red-100 shadow-sm shadow-red-50"
                     >
                         Terminal Home
                     </button>

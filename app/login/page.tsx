@@ -141,7 +141,7 @@ export default function GlobalLogin() {
                             <button
                                 type="button"
                                 onClick={() => router.push('/')}
-                                className="text-center text-[10px] font-black text-gray-300 hover:text-gray-500 transition-colors tracking-[0.3em] uppercase italic"
+                                className="text-center text-[10px] font-black text-red-600 hover:text-red-700 transition-colors tracking-[0.3em] uppercase italic"
                             >
                                 Terminal Home
                             </button>
