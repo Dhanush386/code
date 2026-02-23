@@ -116,7 +116,7 @@ export default function ExamEntry() {
                         <form onSubmit={handleEntry} className="space-y-6">
                             <div className="relative group">
                                 <input
-                                    type="text"
+                                    type="password"
                                     value={examCode}
                                     onChange={(e) => setExamCode(e.target.value.toUpperCase())}
                                     className="w-full px-8 py-6 bg-gray-50 border-2 border-transparent rounded-3xl focus:bg-white focus:border-indigo-600 transition-all outline-none font-black text-3xl text-center tracking-[0.5em] text-indigo-600 italic placeholder:text-gray-100"
@@ -146,7 +146,9 @@ export default function ExamEntry() {
                                 className="mt-8 p-6 bg-indigo-50 rounded-[2rem] border-2 border-indigo-200 text-center"
                             >
                                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 italic">Active Reconnaissance Code</p>
-                                <div className="text-3xl font-black italic tracking-[0.3em] text-indigo-600 mb-4">{prevCode}</div>
+                                <div className="text-3xl font-black italic tracking-[0.3em] text-indigo-600 mb-4">
+                                    {prevCode.replace(/./g, '*')}
+                                </div>
                                 <button
                                     onClick={() => router.push(`/participant/contest?code=${prevCode}`)}
                                     className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-black italic text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg"
