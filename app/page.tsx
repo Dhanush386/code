@@ -11,7 +11,7 @@ export default function LandingPage() {
             <div
                 className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat scale-110"
                 style={{
-                    backgroundImage: 'url("https://images.pexels.com/photos/1089438/pexels-photo-1089438.jpeg")',
+                    backgroundImage: 'url("https://images.pexels.com/photos/1089438/pexels-photo-1089438.jpe")',
                 }}
             />
             <div className="fixed inset-0 z-1 bg-gradient-to-br from-gray-950/95 via-gray-900/80 to-indigo-950/95 backdrop-blur-[2px]" />
