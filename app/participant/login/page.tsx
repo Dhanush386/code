@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, School, UserPlus, ArrowRight, Loader2, Code, AlertCircle, CheckCircle2, Sparkles, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ParticipantPortal() {
     const [loading, setLoading] = useState(false);
@@ -185,12 +186,12 @@ export default function ParticipantPortal() {
                 </div>
 
                 <div className="mt-10 flex flex-col items-center gap-4">
-                    <button
-                        onClick={() => router.push('/')}
-                        className="text-xs font-black text-red-600 hover:text-red-700 transition-colors tracking-[0.3em] uppercase italic bg-white px-6 py-2 rounded-full border border-red-100 shadow-sm shadow-red-50"
+                    <Link
+                        href="/"
+                        className="text-xs font-black text-red-600 hover:text-red-700 transition-colors tracking-[0.3em] uppercase italic bg-white px-6 py-2 rounded-full border border-red-100 shadow-sm shadow-red-50 inline-block"
                     >
                         Terminal Home
-                    </button>
+                    </Link>
                 </div>
             </motion.div>
 

@@ -138,13 +138,12 @@ export default function GlobalLogin() {
                                 New Team? Register Here
                             </Link>
 
-                            <button
-                                type="button"
-                                onClick={() => router.push('/')}
+                            <Link
+                                href="/"
                                 className="text-center text-[10px] font-black text-red-600 hover:text-red-700 transition-colors tracking-[0.3em] uppercase italic"
                             >
                                 Terminal Home
-                            </button>
+                            </Link>
                         </div>
                     </form>
                 </div>
