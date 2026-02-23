@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard,
     PlusCircle,
@@ -37,6 +38,7 @@ export default function OrganizerLayout({
     const pathname = usePathname();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
 
     useEffect(() => {
         const organizer = localStorage.getItem('organizer');
@@ -98,15 +100,6 @@ export default function OrganizerLayout({
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-gray-50">
-                    <button
-                        onClick={handleSignOut}
-                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold italic text-red-400 hover:bg-red-50 hover:text-red-500 transition-all"
-                    >
-                        <LogOut size={20} />
-                        <span>Sign Out</span>
-                    </button>
-                </div>
             </aside>
 
             {/* Main Content */}
@@ -118,14 +111,48 @@ export default function OrganizerLayout({
                             {navItems.find(i => i.href === pathname)?.name || 'Dashboard'}
                         </h2>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="text-right">
-                            <p className="text-xs font-black italic text-gray-900 leading-none">Admin Core</p>
-                            <p className="text-[10px] font-bold text-blue-500 uppercase leading-none mt-1">Insightophia '26</p>
-                        </div>
-                        <div className="h-10 w-10 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-500 font-black italic">
-                            AC
-                        </div>
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowProfileMenu(!showProfileMenu)}
+                            className="flex items-center gap-4 hover:bg-gray-50 p-2 rounded-2xl transition-all active:scale-95 group"
+                        >
+                            <div className="text-right">
+                                <p className="text-xs font-black italic text-gray-900 leading-none group-hover:text-blue-600 transition-colors">Admin Core</p>
+                                <p className="text-[10px] font-bold text-blue-500 uppercase leading-none mt-1">Insightophia '26</p>
+                            </div>
+                            <div className="h-10 w-10 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-500 font-black italic group-hover:bg-blue-50 group-hover:text-blue-600 transition-all shadow-sm">
+                                AC
+                            </div>
+                        </button>
+
+                        <AnimatePresence>
+                            {showProfileMenu && (
+                                <>
+                                    {/* Backdrop for easy closing */}
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setShowProfileMenu(false)}
+                                    />
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        className="absolute right-0 mt-3 w-56 bg-white rounded-3xl shadow-2xl shadow-gray-200 border border-gray-100 overflow-hidden z-50 p-2"
+                                    >
+                                        <button
+                                            onClick={() => {
+                                                handleSignOut();
+                                                setShowProfileMenu(false);
+                                            }}
+                                            className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl font-black italic text-red-500 hover:bg-red-50 transition-all text-sm uppercase tracking-widest"
+                                        >
+                                            <LogOut size={18} />
+                                            Sign Out
+                                        </button>
+                                    </motion.div>
+                                </>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </header>
                 <div className="p-8">
