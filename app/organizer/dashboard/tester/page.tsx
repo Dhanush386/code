@@ -184,9 +184,9 @@ function TesterContent() {
     }
 
     return (
-        <div className="flex gap-6 h-[calc(100vh-8rem)]">
+        <div className="flex gap-8 h-[calc(100vh-8rem)]">
             {/* Left: Question List */}
-            <div className="w-[18%] flex flex-col gap-6 h-full">
+            <div className="w-1/4 flex flex-col gap-6 h-full">
                 <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm flex flex-col gap-4">
                     <div className="relative group">
                         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
@@ -221,56 +221,6 @@ function TesterContent() {
                         </button>
                     ))}
                 </div>
-            </div>
-
-            {/* Middle: Question Statement */}
-            <div className="w-[32%] flex flex-col gap-4 overflow-hidden">
-                {selectedQuestion ? (
-                    <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/30 flex flex-col overflow-hidden h-full">
-                        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white/50 backdrop-blur-sm sticky top-0 z-10">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
-                                    <BookOpen size={20} />
-                                </div>
-                                <h2 className="text-sm font-black italic tracking-widest text-gray-950 uppercase">Analysis</h2>
-                            </div>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                            <section>
-                                <h3 className="text-[10px] font-black italic text-gray-400 uppercase tracking-widest mb-3">Narrative</h3>
-                                <div className="text-gray-800 font-bold italic leading-relaxed text-sm whitespace-pre-wrap">{selectedQuestion.description}</div>
-                            </section>
-                            <div className="grid grid-cols-1 gap-8">
-                                <section>
-                                    <h3 className="text-[10px] font-black italic text-gray-400 uppercase tracking-widest mb-3">Input Vector</h3>
-                                    <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 text-xs font-bold italic text-gray-600 whitespace-pre-wrap">{selectedQuestion.inputFormat}</div>
-                                </section>
-                                <section>
-                                    <h3 className="text-[10px] font-black italic text-gray-400 uppercase tracking-widest mb-3">Output Schema</h3>
-                                    <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 text-xs font-bold italic text-gray-600 whitespace-pre-wrap">{selectedQuestion.outputFormat}</div>
-                                </section>
-                            </div>
-                            <section>
-                                <h3 className="text-[10px] font-black italic text-gray-400 uppercase tracking-widest mb-3">Logic Constraints</h3>
-                                <div className="bg-indigo-50/50 rounded-2xl p-4 border border-indigo-100 text-xs font-bold italic text-indigo-600 whitespace-pre-wrap">{selectedQuestion.constraints}</div>
-                            </section>
-                            <div className="grid grid-cols-1 gap-8">
-                                <section>
-                                    <h3 className="text-[10px] font-black italic text-gray-400 uppercase tracking-widest mb-3">Sample Input</h3>
-                                    <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800 text-xs font-mono font-bold text-gray-300 whitespace-pre-wrap">{selectedQuestion.sampleInput}</div>
-                                </section>
-                                <section>
-                                    <h3 className="text-[10px] font-black italic text-gray-400 uppercase tracking-widest mb-3">Sample Output</h3>
-                                    <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800 text-xs font-mono font-bold text-green-400 whitespace-pre-wrap">{selectedQuestion.sampleOutput}</div>
-                                </section>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="h-full bg-white/50 rounded-[2.5rem] border-2 border-dashed border-gray-100 flex items-center justify-center opacity-50">
-                        <p className="text-[10px] font-black text-gray-300 uppercase italic tracking-widest">Protocol Analysis Pending</p>
-                    </div>
-                )}
             </div>
 
             {/* Right: Problem Tester Interface */}
