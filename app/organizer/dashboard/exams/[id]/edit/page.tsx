@@ -25,7 +25,7 @@ interface Question {
 }
 
 const generateCode = () => {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
+    return (Math.floor(100000 + Math.random() * 900000)).toString();
 };
 
 export default function EditExam({ params }: { params: Promise<{ id: string }> }) {
