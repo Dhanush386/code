@@ -10,5 +10,10 @@ services:
         value: 20.19.0
       - key: PRISMA_CLIENT_ENGINE_TYPE
         value: library
+      - fromGroup: database-secrets
+
+envVarGroups:
+  - name: database-secrets
+    envVars:
       - key: DATABASE_URL
         sync: true
