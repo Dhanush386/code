@@ -16,4 +16,4 @@ envVarGroups:
   - name: database-secrets
     envVars:
       - key: DATABASE_URL
-        value: postgresql://coderelay_user:me4WJmVIymEQlp79EbTED0yjqdqzBhiI@dpg-d64rslshg0os73df80g0-a.singapore-postgres.render.com/coderelay
+        value: postgresql://coderelay_user:me4WJmVIymEQlp79EbTED0yjqdqzBhiI@dpg-d64rslshg0os73df80g0-a.singapore-postgres.render.com/coderelay?sslmode=require
