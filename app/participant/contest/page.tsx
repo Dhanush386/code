@@ -84,6 +84,10 @@ function ContestContent() {
             setIsDarkMode(true);
             document.documentElement.classList.add('dark');
             setEditorTheme('vs-dark');
+        } else {
+            setIsDarkMode(false);
+            document.documentElement.classList.remove('dark');
+            setEditorTheme('vs');
         }
     }, []);
 
@@ -630,12 +634,12 @@ function ContestContent() {
 
     if (loading || !question) {
         return (
-            <div className="h-screen bg-white flex flex-col items-center justify-center">
+            <div className="h-screen bg-white dark:bg-gray-950 flex flex-col items-center justify-center">
                 <div className="flex flex-col items-center gap-6">
                     <Loader2 className="animate-spin text-indigo-500" size={60} />
                     <div className="text-center">
-                        <h2 className="text-2xl font-black italic tracking-tighter text-gray-950 uppercase">Syncing with Relay Node</h2>
-                        <p className="text-gray-400 font-bold italic text-xs uppercase tracking-widest mt-2">Initializing secure contest environment...</p>
+                        <h2 className="text-2xl font-black italic tracking-tighter text-gray-950 dark:text-gray-100 uppercase">Syncing with Relay Node</h2>
+                        <p className="text-gray-400 dark:text-gray-500 font-bold italic text-xs uppercase tracking-widest mt-2">Initializing secure contest environment...</p>
                     </div>
                 </div>
             </div>
@@ -664,19 +668,19 @@ function ContestContent() {
                         <span className="font-bold italic text-gray-900 dark:text-gray-100 border-b-2 border-indigo-200 dark:border-indigo-900">{teamName}</span>
                     </div>
 
-                    <div className="h-4 w-[1px] bg-gray-200" />
+                    <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-800" />
 
-                    <div className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 shadow-sm">
+                    <div className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-100 dark:border-indigo-900 shadow-sm">
                         <Sparkles size={14} className="animate-pulse" />
                         <span className="text-[10px] font-black italic uppercase tracking-widest">Score Cluster</span>
-                        <span className="text-sm font-black italic text-indigo-700 ml-1">{totalScore} PTS</span>
+                        <span className="text-sm font-black italic text-indigo-700 dark:text-indigo-300 ml-1">{totalScore} PTS</span>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-8">
                     {/* Violation Badge */}
                     {violationCount > 0 && (
-                        <div className="flex items-center gap-2 px-4 py-1.5 bg-red-50 text-red-600 rounded-full border border-red-100 animate-pulse">
+                        <div className="flex items-center gap-2 px-4 py-1.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-full border border-red-100 dark:border-red-900 animate-pulse">
                             <ShieldAlert size={14} />
                             <span className="text-[10px] font-black italic uppercase tracking-widest">Protocol Warning {violationCount}/3</span>
                         </div>
@@ -789,7 +793,7 @@ function ContestContent() {
                                         <pre className="text-indigo-600 font-bold">{question.sampleInput}</pre>
                                     </div>
                                     <div className="bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-6 font-mono text-sm shadow-sm">
-                                        <p className="text-gray-900 uppercase text-[10px] mb-2 font-black italic">Output</p>
+                                        <p className="text-gray-900 dark:text-gray-400 uppercase text-[10px] mb-2 font-black italic">Output</p>
                                         <pre className="text-emerald-600 font-bold">{question.sampleOutput}</pre>
                                     </div>
                                 </div>
@@ -815,15 +819,7 @@ function ContestContent() {
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setEditorTheme(prev => prev === 'vs' ? 'vs-dark' : 'vs')}
-                                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 group"
-                                    title={editorTheme === 'vs' ? "Switch to Dark Node" : "Switch to Light Node"}
-                                >
-                                    {editorTheme === 'vs' ? <Moon size={18} /> : <Sun size={18} />}
-                                </button>
-
-                                <button className="text-gray-400 hover:text-indigo-600 transition-colors p-2">
+                                <button className="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-2">
                                     <Settings size={18} />
                                 </button>
                             </div>
@@ -1102,13 +1098,13 @@ function ContestContent() {
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
-                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-amber-500 shadow-2xl shadow-amber-500/20"
+                            className="bg-white dark:bg-gray-900 rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-amber-500 shadow-2xl shadow-amber-500/20"
                         >
-                            <div className="inline-flex p-6 bg-amber-50 text-amber-600 rounded-[2rem] border border-amber-100 mb-8 animate-pulse">
+                            <div className="inline-flex p-6 bg-amber-50 dark:bg-amber-950/30 text-amber-600 rounded-[2rem] border border-amber-100 dark:border-amber-900 mb-8 animate-pulse">
                                 <Clock size={60} />
                             </div>
-                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Phase Time Expired</h2>
-                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 dark:text-gray-100 mb-4 uppercase">Phase Time Expired</h2>
+                            <p className="text-gray-500 dark:text-gray-400 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
                                 The relay window for this node has closed. You must now synchronize with the next level.
                             </p>
                             <button
@@ -1135,13 +1131,13 @@ function ContestContent() {
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
-                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-indigo-500 shadow-2xl shadow-indigo-500/20"
+                            className="bg-white dark:bg-gray-900 rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-indigo-500 shadow-2xl shadow-indigo-500/20"
                         >
-                            <div className="inline-flex p-6 bg-indigo-50 text-indigo-600 rounded-[2rem] border border-indigo-100 mb-8 animate-pulse">
+                            <div className="inline-flex p-6 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 rounded-[2rem] border border-indigo-100 dark:border-indigo-900 mb-8 animate-pulse">
                                 <Maximize2 size={60} />
                             </div>
-                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Signal Lost</h2>
-                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 dark:text-gray-100 mb-4 uppercase">Signal Lost</h2>
+                            <p className="text-gray-500 dark:text-gray-400 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
                                 Mandatory proctoring protocol breached. Re-establish full-screen environment to continue the relay.
                             </p>
                             <button
@@ -1171,14 +1167,14 @@ function ContestContent() {
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-[3rem] p-12 max-w-lg w-full text-center border-4 border-indigo-500 shadow-2xl shadow-indigo-500/20 relative overflow-hidden"
+                            className="bg-white dark:bg-gray-900 rounded-[3rem] p-12 max-w-lg w-full text-center border-4 border-indigo-500 shadow-2xl shadow-indigo-500/20 relative overflow-hidden"
                         >
                             {/* Decorative scanline */}
                             <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 animate-scanline" />
 
                             {transitionStatus === 'sync' && (
                                 <>
-                                    <div className="inline-flex p-6 bg-indigo-50 text-indigo-600 rounded-[2rem] border border-indigo-100 mb-8">
+                                    <div className="inline-flex p-6 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 rounded-[2rem] border border-indigo-100 dark:border-indigo-900 mb-8">
                                         <Zap size={60} className="animate-pulse" />
                                     </div>
                                     <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 dark:text-gray-100 mb-4 uppercase">Protocol Synced</h2>
@@ -1198,11 +1194,11 @@ function ContestContent() {
 
                             {transitionStatus === 'phase' && (
                                 <>
-                                    <div className="inline-flex p-6 bg-emerald-50 text-emerald-600 rounded-[2rem] border border-emerald-100 mb-8">
+                                    <div className="inline-flex p-6 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 rounded-[2rem] border border-emerald-100 dark:border-emerald-900 mb-8">
                                         <CheckCircle2 size={60} className="animate-bounce" />
                                     </div>
-                                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Phase Complete</h2>
-                                    <p className="text-gray-500 font-bold italic text-sm mb-4 uppercase tracking-widest leading-relaxed">
+                                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 dark:text-gray-100 mb-4 uppercase">Phase Complete</h2>
+                                    <p className="text-gray-500 dark:text-gray-400 font-bold italic text-sm mb-4 uppercase tracking-widest leading-relaxed">
                                         All challenges in this node have been synchronized.
                                     </p>
                                     <p className="text-2xl font-black text-emerald-600 italic mb-8">
@@ -1221,20 +1217,20 @@ function ContestContent() {
 
                             {transitionStatus === 'locked' && (
                                 <>
-                                    <div className="inline-flex p-6 bg-orange-50 text-orange-600 rounded-[2rem] border border-orange-100 mb-8">
+                                    <div className="inline-flex p-6 bg-orange-50 dark:bg-orange-950/30 text-orange-600 rounded-[2rem] border border-orange-100 dark:border-orange-900 mb-8">
                                         <ShieldAlert size={60} />
                                     </div>
-                                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Sync Incomplete</h2>
-                                    <p className="text-gray-500 font-bold italic text-sm mb-6 uppercase tracking-widest leading-relaxed">
+                                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 dark:text-gray-100 mb-4 uppercase">Sync Incomplete</h2>
+                                    <p className="text-gray-500 dark:text-gray-400 font-bold italic text-sm mb-6 uppercase tracking-widest leading-relaxed">
                                         Challenge mastered, but remaining node vulnerabilities detected. Complete all tasks to unlock the next phase.
                                     </p>
 
-                                    <div className="bg-orange-50/50 rounded-2xl p-6 border border-orange-100 text-left">
-                                        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-4 italic">Pending Synchronizations:</p>
+                                    <div className="bg-orange-50/50 dark:bg-orange-950/20 rounded-2xl p-6 border border-orange-100 dark:border-orange-900 text-left">
+                                        <p className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest mb-4 italic">Pending Synchronizations:</p>
                                         <div className="space-y-3">
                                             {allQuestions.filter(q => !q.isPassed).map(q => (
-                                                <div key={q.id} className="flex items-center gap-3 text-orange-800 font-bold italic text-sm uppercase">
-                                                    <div className="h-2 w-2 rounded-full bg-orange-400" />
+                                                <div key={q.id} className="flex items-center gap-3 text-orange-800 dark:text-orange-200 font-bold italic text-sm uppercase">
+                                                    <div className="h-2 w-2 rounded-full bg-orange-400 dark:bg-orange-500" />
                                                     {q.title}
                                                 </div>
                                             ))}
