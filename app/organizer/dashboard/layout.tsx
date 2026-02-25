@@ -73,7 +73,7 @@ export default function OrganizerLayout({
                         </div>
                         <span className="text-xl font-black italic tracking-tighter">CODE RELAY</span>
                     </Link>
-                    <p className="text-[10px] font-black text-gray-400 mt-2 uppercase tracking-widest italic ml-10">
+                    <p className="text-[10px] font-black text-gray-600 mt-2 uppercase tracking-widest italic ml-10">
                         Organizer Panel
                     </p>
                 </div>
@@ -87,7 +87,7 @@ export default function OrganizerLayout({
                                 href={item.href}
                                 className={`flex items-center justify-between px-4 py-3.5 rounded-2xl font-bold italic transition-all group ${isActive
                                     ? 'bg-blue-50 text-blue-600 shadow-sm'
-                                    : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-950'
                                     }`}
                             >
                                 <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ export default function OrganizerLayout({
                 <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-6">
                         <LiveClock />
-                        <h2 className="text-sm font-black italic text-gray-400 uppercase tracking-[0.2em]">
+                        <h2 className="text-sm font-black italic text-gray-600 uppercase tracking-[0.2em]">
                             {navItems.find(i => i.href === pathname)?.name || 'Dashboard'}
                         </h2>
                     </div>
