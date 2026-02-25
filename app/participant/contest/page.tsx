@@ -75,6 +75,33 @@ function ContestContent() {
         message: '',
         type: 'error'
     });
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    // Theme Management
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('nightMode');
+        if (savedTheme === 'enabled') {
+            setIsDarkMode(true);
+            document.documentElement.classList.add('dark');
+            setEditorTheme('vs-dark');
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        setIsDarkMode(prev => {
+            const next = !prev;
+            if (next) {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('nightMode', 'enabled');
+                setEditorTheme('vs-dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('nightMode', 'disabled');
+                setEditorTheme('vs');
+            }
+            return next;
+        });
+    };
 
     // Fullscreen Detection
     useEffect(() => {
@@ -617,24 +644,24 @@ function ContestContent() {
 
     return (
         <div
-            className="h-screen bg-gray-50 flex flex-col overflow-hidden font-sans select-none"
+            className="h-screen bg-gray-50 dark:bg-black flex flex-col overflow-hidden font-sans select-none"
             onContextMenu={(e) => e.preventDefault()}
         >
             {/* Header */}
-            <header className="bg-white border-b border-gray-100 flex items-center justify-between px-8 py-3">
+            <header className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-8 py-3">
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
                         <div className="bg-indigo-600 p-1.5 rounded-lg text-white">
                             <Zap size={18} fill="currentColor" />
                         </div>
-                        <span className="font-black italic tracking-tighter text-gray-950 uppercase">Code Relay</span>
+                        <span className="font-black italic tracking-tighter text-gray-950 dark:text-gray-100 uppercase">Code Relay</span>
                     </div>
 
                     <div className="h-4 w-[1px] bg-gray-200" />
 
                     <div className="flex items-center gap-3">
                         <span className="text-[10px] font-black text-gray-400 italic uppercase tracking-widest">Contestant</span>
-                        <span className="font-bold italic text-gray-900 border-b-2 border-indigo-200">{teamName}</span>
+                        <span className="font-bold italic text-gray-900 dark:text-gray-100 border-b-2 border-indigo-200 dark:border-indigo-900">{teamName}</span>
                     </div>
 
                     <div className="h-4 w-[1px] bg-gray-200" />
@@ -655,16 +682,28 @@ function ContestContent() {
                         </div>
                     )}
 
-                    <div className={`flex items-center gap-3 px-6 py-2 rounded-2xl border-2 transition-all ${timeRemaining < 300 ? 'bg-red-50 border-red-200 text-red-600' : 'bg-gray-950 border-gray-800 text-white'}`}>
+                    <div className={`flex items-center gap-3 px-6 py-2 rounded-2xl border-2 transition-all ${timeRemaining < 300 ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900 text-red-600' : 'bg-gray-950 dark:bg-gray-900 border-gray-800 dark:border-gray-700 text-white'}`}>
                         <Clock size={18} className={timeRemaining < 300 ? 'animate-pulse' : ''} />
                         <span className="text-xl font-mono font-black tracking-widest">{formatTime(timeRemaining)}</span>
                     </div>
 
-                    <div className="h-6 w-[1px] bg-gray-200" />
+                    <div className="h-6 w-[1px] bg-gray-200 dark:bg-gray-800" />
+
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2.5 bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-xl transition-all border border-gray-100 dark:border-gray-800 group"
+                        title={isDarkMode ? 'Light Mode' : 'Night Mode'}
+                    >
+                        {isDarkMode ? (
+                            <Sun size={20} className="group-hover:rotate-90 transition-transform duration-500" />
+                        ) : (
+                            <Moon size={20} className="group-hover:-rotate-12 transition-transform duration-500" />
+                        )}
+                    </button>
 
                     <button
                         onClick={handleLogout}
-                        className="p-2.5 bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-gray-100 group"
+                        className="p-2.5 bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all border border-gray-100 dark:border-gray-800 group"
                         title="Logout Session"
                     >
                         <LogOut size={20} className="group-hover:rotate-12 transition-transform" />
@@ -675,7 +714,7 @@ function ContestContent() {
             {/* Main Content Area */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Vertical Question Nav Rail */}
-                <div className="w-20 bg-white border-r border-gray-100 flex flex-col items-center py-10 gap-6 z-10 shadow-[4px_0_10px_-5px_rgba(0,0,0,0.05)]">
+                <div className="w-20 bg-white dark:bg-gray-950 border-r border-gray-100 dark:border-gray-800 flex flex-col items-center py-10 gap-6 z-10 shadow-[4px_0_10px_-5px_rgba(0,0,0,0.05)]">
                     <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest italic mb-2">Node</span>
                     {allQuestions.map((q, idx) => (
                         <button
@@ -683,7 +722,7 @@ function ContestContent() {
                             onClick={() => switchQuestion(idx)}
                             className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all group relative ${activeIndex === idx
                                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-110'
-                                : 'bg-gray-50 text-gray-400 hover:bg-indigo-50 hover:text-indigo-500'
+                                : 'bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:text-indigo-500'
                                 }`}
                         >
                             <span className="text-sm font-black italic">{idx + 1}</span>
@@ -703,7 +742,7 @@ function ContestContent() {
                 {/* Question and Editor Area */}
                 <div className="flex-1 flex overflow-hidden">
                     {/* Left Panel: Question */}
-                    <div className="w-1/2 overflow-y-auto p-10 border-r border-gray-100 bg-white">
+                    <div className="w-1/2 overflow-y-auto p-10 border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
                         <div className="max-w-2xl mx-auto space-y-10">
                             <div className="flex items-center gap-3">
                                 <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black italic uppercase tracking-widest border border-indigo-100">
@@ -713,43 +752,43 @@ function ContestContent() {
                                     <Sparkles size={10} /> {question.points || 10} Marks
                                 </span>
                             </div>
-                            <h1 className="text-4xl font-black italic tracking-tighter text-gray-950 mt-4 uppercase uppercase">
+                            <h1 className="text-4xl font-black italic tracking-tighter text-gray-950 dark:text-gray-100 mt-4 uppercase uppercase">
                                 {question.title}
                             </h1>
                         </div>
 
                         <div className="space-y-6">
-                            <div className="prose prose-slate prose-lg font-bold italic text-gray-600 leading-relaxed">
+                            <div className="prose prose-slate dark:prose-invert prose-lg font-bold italic text-gray-600 dark:text-gray-400 leading-relaxed">
                                 {question.description}
                             </div>
 
                             <div className="grid grid-cols-1 gap-6">
-                                <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                                    <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-3 italic">Input Constrain</h4>
-                                    <p className="font-bold italic text-gray-950 text-sm leading-relaxed">{question.inputFormat}</p>
+                                <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800">
+                                    <h4 className="text-[10px] font-black text-gray-900 dark:text-gray-300 uppercase tracking-widest mb-3 italic">Input Constrain</h4>
+                                    <p className="font-bold italic text-gray-950 dark:text-gray-200 text-sm leading-relaxed">{question.inputFormat}</p>
                                 </div>
-                                <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                                    <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-3 italic">Output Constrain</h4>
-                                    <p className="font-bold italic text-gray-950 text-sm leading-relaxed">{question.outputFormat}</p>
+                                <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800">
+                                    <h4 className="text-[10px] font-black text-gray-900 dark:text-gray-300 uppercase tracking-widest mb-3 italic">Output Constrain</h4>
+                                    <p className="font-bold italic text-gray-950 dark:text-gray-200 text-sm leading-relaxed">{question.outputFormat}</p>
                                 </div>
                                 {question.constraints && (
-                                    <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                                        <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest mb-3 italic">Constraints</h4>
-                                        <p className="font-bold italic text-gray-950 text-sm leading-relaxed">{question.constraints}</p>
+                                    <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800">
+                                        <h4 className="text-[10px] font-black text-gray-900 dark:text-gray-300 uppercase tracking-widest mb-3 italic">Constraints</h4>
+                                        <p className="font-bold italic text-gray-950 dark:text-gray-200 text-sm leading-relaxed">{question.constraints}</p>
                                     </div>
                                 )}
                             </div>
 
                             <div className="space-y-4">
-                                <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest italic ml-1 flex items-center gap-2">
+                                <h4 className="text-[10px] font-black text-gray-900 dark:text-gray-300 uppercase tracking-widest italic ml-1 flex items-center gap-2">
                                     <Terminal size={14} /> Test cases
                                 </h4>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 font-mono text-sm shadow-sm">
-                                        <p className="text-gray-900 uppercase text-[10px] mb-2 font-black italic">Input</p>
+                                    <div className="bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-6 font-mono text-sm shadow-sm">
+                                        <p className="text-gray-900 dark:text-gray-400 uppercase text-[10px] mb-2 font-black italic">Input</p>
                                         <pre className="text-indigo-600 font-bold">{question.sampleInput}</pre>
                                     </div>
-                                    <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 font-mono text-sm shadow-sm">
+                                    <div className="bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-6 font-mono text-sm shadow-sm">
                                         <p className="text-gray-900 uppercase text-[10px] mb-2 font-black italic">Output</p>
                                         <pre className="text-emerald-600 font-bold">{question.sampleOutput}</pre>
                                     </div>
@@ -759,15 +798,15 @@ function ContestContent() {
                     </div>
 
                     {/* Right Panel: Editor */}
-                    <div className="w-1/2 flex flex-col bg-white border-l border-gray-100 h-full overflow-hidden">
+                    <div className="w-1/2 flex flex-col bg-white dark:bg-gray-950 border-l border-gray-100 dark:border-gray-800 h-full overflow-hidden">
                         {/* Editor Toolbar */}
-                        <div className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-6">
-                            <div className="flex gap-1 bg-gray-50 p-1 rounded-xl border border-gray-100">
+                        <div className="h-14 bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-6">
+                            <div className="flex gap-1 bg-gray-50 dark:bg-gray-900 p-1 rounded-xl border border-gray-100 dark:border-gray-800">
                                 {(question.allowedLanguages || ['python']).map((lang: string) => (
                                     <button
                                         key={lang}
                                         onClick={() => setSelectedLanguage(lang)}
-                                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black italic uppercase tracking-widest transition-all ${selectedLanguage === lang ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600'
+                                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black italic uppercase tracking-widest transition-all ${selectedLanguage === lang ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
                                             }`}
                                     >
                                         {lang === 'cpp' ? 'C++' : lang}
@@ -778,7 +817,7 @@ function ContestContent() {
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setEditorTheme(prev => prev === 'vs' ? 'vs-dark' : 'vs')}
-                                    className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all border border-transparent hover:border-indigo-100 group"
+                                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-xl transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 group"
                                     title={editorTheme === 'vs' ? "Switch to Dark Node" : "Switch to Light Node"}
                                 >
                                     {editorTheme === 'vs' ? <Moon size={18} /> : <Sun size={18} />}
@@ -790,7 +829,7 @@ function ContestContent() {
                             </div>
                         </div>
 
-                        <div className="flex-1 relative flex flex-col overflow-hidden">
+                        <div className="flex-1 relative flex flex-col overflow-hidden bg-white dark:bg-gray-950">
                             <div
                                 className={`transition-all duration-500 ${runResult ? 'h-1/2' : 'h-full'}`}
                                 onPaste={(e) => {
@@ -827,29 +866,29 @@ function ContestContent() {
                                         initial={{ height: 0 }}
                                         animate={{ height: '50%' }}
                                         exit={{ height: 0 }}
-                                        className="bg-white border-t-4 border-indigo-500 overflow-hidden flex flex-col"
+                                        className="bg-white dark:bg-gray-900 border-t-4 border-indigo-500 overflow-hidden flex flex-col"
                                     >
-                                        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                                        <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-900/50">
                                             <div className="flex items-center gap-4">
                                                 <h4 className="text-[10px] font-black italic uppercase tracking-widest text-gray-950 flex items-center gap-2">
                                                     <Terminal size={14} /> Execution Result
                                                 </h4>
-                                                <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-2 ${runResult.isPassed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
+                                                <div className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-2 ${runResult.isPassed ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 border-emerald-200 dark:border-emerald-900' : 'bg-red-50 dark:bg-red-950/20 text-red-600 border-red-200 dark:border-red-900'}`}>
                                                     {runResult.isPassed ? 'PASSED (STABLE)' : 'FAILED (DEGRADED)'}
                                                 </div>
                                             </div>
                                             <button onClick={() => setRunResult(null)} className="text-gray-400 hover:text-gray-600 font-black text-xs uppercase italic">Close</button>
                                         </div>
                                         <div className="flex-1 grid grid-cols-2 gap-px bg-gray-100 p-px">
-                                            <div className="bg-white p-6 flex flex-col min-w-0">
+                                            <div className="bg-white dark:bg-gray-950 p-6 flex flex-col min-w-0">
                                                 <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest italic mb-3">Your Output</p>
-                                                <pre className="flex-1 bg-gray-50 rounded-xl p-4 font-mono text-sm text-gray-800 overflow-auto border border-gray-100 italic font-bold">
+                                                <pre className="flex-1 bg-gray-50 dark:bg-gray-900 rounded-xl p-4 font-mono text-sm text-gray-800 dark:text-gray-200 overflow-auto border border-gray-100 dark:border-gray-800 italic font-bold">
                                                     {runResult.userOutput}
                                                 </pre>
                                             </div>
-                                            <div className="bg-white p-6 flex flex-col min-w-0">
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic mb-3">Expected Output</p>
-                                                <pre className="flex-1 bg-gray-50 rounded-xl p-4 font-mono text-sm text-gray-800 overflow-auto border border-gray-100 italic font-bold">
+                                            <div className="bg-white dark:bg-gray-950 p-6 flex flex-col min-w-0">
+                                                <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest italic mb-3">Expected Output</p>
+                                                <pre className="flex-1 bg-gray-50 dark:bg-gray-900 rounded-xl p-4 font-mono text-sm text-gray-800 dark:text-gray-200 overflow-auto border border-gray-100 dark:border-gray-800 italic font-bold">
                                                     {runResult.expectedOutput}
                                                 </pre>
                                             </div>
@@ -863,7 +902,7 @@ function ContestContent() {
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
-                                        className="absolute inset-0 bg-white/95 backdrop-blur-md flex flex-col items-center justify-center z-50 p-12"
+                                        className="absolute inset-0 bg-white/95 dark:bg-black/95 backdrop-blur-md flex flex-col items-center justify-center z-50 p-12"
                                     >
                                         <div className="w-full max-w-md space-y-8">
                                             {/* Header */}
@@ -874,7 +913,7 @@ function ContestContent() {
                                                 >
                                                     <Clock size={24} />
                                                 </motion.div>
-                                                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-gray-950">Processing...</h3>
+                                                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-gray-950 dark:text-gray-100">Processing...</h3>
                                             </div>
 
                                             {/* Stats Row */}
@@ -928,10 +967,10 @@ function ContestContent() {
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
-                                        className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50"
+                                        className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-50"
                                     >
                                         <Loader2 className="text-emerald-500 animate-spin mb-6" size={60} />
-                                        <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Running Case...</h3>
+                                        <h3 className="text-2xl font-black italic text-gray-950 dark:text-gray-100 uppercase tracking-tighter">Running Case...</h3>
                                     </motion.div>
                                 )}
 
@@ -940,14 +979,14 @@ function ContestContent() {
                                         key="success-overlay"
                                         initial={{ y: 50, opacity: 0 }}
                                         animate={{ y: 0, opacity: 1 }}
-                                        className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-3xl p-8 border-4 border-emerald-500 shadow-2xl shadow-emerald-500/20 z-[60] flex items-center gap-6"
+                                        className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-900 rounded-3xl p-8 border-4 border-emerald-500 shadow-2xl shadow-emerald-500/20 z-[60] flex items-center gap-6"
                                     >
-                                        <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl">
+                                        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 rounded-2xl">
                                             <CheckCircle2 size={40} />
                                         </div>
                                         <div>
-                                            <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">All Signals Green ({question.points || 10}/{question.points || 10})</h3>
-                                            <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest">Perfect signature match. Access granted to next node.</p>
+                                            <h3 className="text-2xl font-black italic text-gray-950 dark:text-gray-100 uppercase tracking-tighter">All Signals Green ({question.points || 10}/{question.points || 10})</h3>
+                                            <p className="text-gray-400 dark:text-gray-500 font-bold italic text-sm uppercase tracking-widest">Perfect signature match. Access granted to next node.</p>
                                         </div>
                                     </motion.div>
                                 )}
@@ -957,14 +996,14 @@ function ContestContent() {
                                         key="partial-overlay"
                                         initial={{ y: 50, opacity: 0 }}
                                         animate={{ y: 0, opacity: 1 }}
-                                        className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-3xl p-8 border-4 border-amber-500 shadow-2xl shadow-amber-500/20 z-[60] flex items-center gap-6"
+                                        className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-900 rounded-3xl p-8 border-4 border-amber-500 shadow-2xl shadow-amber-500/20 z-[60] flex items-center gap-6"
                                     >
-                                        <div className="p-4 bg-amber-50 text-amber-600 rounded-2xl">
+                                        <div className="p-4 bg-amber-50 dark:bg-amber-950/30 text-amber-600 rounded-2xl">
                                             <Zap size={40} />
                                         </div>
                                         <div className="max-w-md">
-                                            <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Partial Signal ({lastSubmissionScore}/{question.points || 10})</h3>
-                                            <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest leading-tight">
+                                            <h3 className="text-2xl font-black italic text-gray-950 dark:text-gray-100 uppercase tracking-tighter">Partial Signal ({lastSubmissionScore}/{question.points || 10})</h3>
+                                            <p className="text-gray-400 dark:text-gray-500 font-bold italic text-sm uppercase tracking-widest leading-tight">
                                                 {passCount}/{totalTests} protocols validated.
                                                 {hasHiddenFailure && <span className="text-red-500 block mt-1 font-black">CRITICAL: HIDDEN TEST CASE(S) FAILED</span>}
                                             </p>
@@ -978,14 +1017,14 @@ function ContestContent() {
                                         key="failure-overlay"
                                         initial={{ y: 50, opacity: 0 }}
                                         animate={{ y: 0, opacity: 1 }}
-                                        className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-3xl p-8 border-4 border-red-500 shadow-2xl shadow-red-500/20 z-[60] flex items-center gap-6"
+                                        className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-900 rounded-3xl p-8 border-4 border-red-500 shadow-2xl shadow-red-500/20 z-[60] flex items-center gap-6"
                                     >
-                                        <div className="p-4 bg-red-50 text-red-600 rounded-2xl">
+                                        <div className="p-4 bg-red-50 dark:bg-red-950/30 text-red-600 rounded-2xl">
                                             <AlertTriangle size={40} />
                                         </div>
                                         <div className="max-w-md">
-                                            <h3 className="text-2xl font-black italic text-gray-950 uppercase tracking-tighter">Signal Failed (0/{question.points || 10})</h3>
-                                            <p className="text-gray-400 font-bold italic text-sm uppercase tracking-widest leading-tight">
+                                            <h3 className="text-2xl font-black italic text-gray-950 dark:text-gray-100 uppercase tracking-tighter">Signal Failed (0/{question.points || 10})</h3>
+                                            <p className="text-gray-400 dark:text-gray-500 font-bold italic text-sm uppercase tracking-widest leading-tight">
                                                 No matching frequencies detected.
                                                 {hasHiddenFailure && <span className="text-red-500 block mt-1 font-black">CRITICAL: HIDDEN TEST CASE(S) FAILED</span>}
                                             </p>
@@ -996,12 +1035,12 @@ function ContestContent() {
                             </AnimatePresence>
                         </div>
 
-                        <div className="p-8 bg-white border-t border-gray-100 flex items-center justify-between">
+                        <div className="p-8 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={handleRun}
                                     disabled={isRunning || isSubmitting}
-                                    className="px-6 py-3 bg-emerald-400 text-emerald-950 rounded-2xl font-black italic uppercase tracking-widest text-xs border-2 border-emerald-300 hover:bg-emerald-500 transition-all disabled:opacity-50 shadow-md shadow-emerald-100"
+                                    className="px-6 py-3 bg-emerald-400 dark:bg-emerald-500 text-emerald-950 dark:text-emerald-50 rounded-2xl font-black italic uppercase tracking-widest text-xs border-2 border-emerald-300 dark:border-emerald-600 hover:bg-emerald-500 dark:hover:bg-emerald-400 transition-all disabled:opacity-50 shadow-md shadow-emerald-100 dark:shadow-emerald-950/20"
                                 >
                                     {isRunning ? 'Executing...' : 'Run'}
                                 </button>
@@ -1033,13 +1072,13 @@ function ContestContent() {
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
-                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-red-500 shadow-2xl shadow-red-500/20"
+                            className="bg-white dark:bg-gray-900 rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-red-500 shadow-2xl shadow-red-500/20"
                         >
                             <div className="inline-flex p-6 bg-red-50 text-red-600 rounded-[2rem] border border-red-100 mb-8 animate-bounce">
                                 <AlertTriangle size={60} />
                             </div>
-                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Violation</h2>
-                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 dark:text-gray-100 mb-4 uppercase">Protocol Violation</h2>
+                            <p className="text-gray-500 dark:text-gray-400 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
                                 Critical Warning: Outside activity detected. Repeated violations ({violationCount}/3) will result in immediate disqualification.
                             </p>
                             <button
@@ -1142,8 +1181,8 @@ function ContestContent() {
                                     <div className="inline-flex p-6 bg-indigo-50 text-indigo-600 rounded-[2rem] border border-indigo-100 mb-8">
                                         <Zap size={60} className="animate-pulse" />
                                     </div>
-                                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">Protocol Synced</h2>
-                                    <p className="text-gray-500 font-bold italic text-sm mb-0 uppercase tracking-widest leading-relaxed">
+                                    <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 dark:text-gray-100 mb-4 uppercase">Protocol Synced</h2>
+                                    <p className="text-gray-500 dark:text-gray-400 font-bold italic text-sm mb-0 uppercase tracking-widest leading-relaxed">
                                         Question mastered. Re-routing to next available challenge node...
                                     </p>
                                     <div className="mt-8 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
@@ -1220,7 +1259,7 @@ function ContestContent() {
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
-                            className="bg-white rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-gray-100 shadow-2xl"
+                            className="bg-white dark:bg-gray-900 rounded-[3rem] p-12 max-w-md w-full text-center border-4 border-gray-100 dark:border-gray-800 shadow-2xl shadow-black/50"
                         >
                             <div className={`inline-flex p-6 rounded-[2rem] border mb-8 ${notification.type === 'success' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                                 notification.type === 'error' ? 'bg-red-50 text-red-600 border-red-100' :
@@ -1231,11 +1270,11 @@ function ContestContent() {
                                         <ShieldAlert size={60} />
                                 }
                             </div>
-                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 mb-4 uppercase">
+                            <h2 className="text-4xl font-black italic tracking-tighter text-gray-950 dark:text-gray-100 mb-4 uppercase">
                                 {notification.type === 'success' ? 'Synchronized' :
                                     notification.type === 'error' ? 'Critical Error' : 'System Notice'}
                             </h2>
-                            <p className="text-gray-500 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
+                            <p className="text-gray-500 dark:text-gray-400 font-bold italic text-sm mb-10 uppercase tracking-widest leading-relaxed">
                                 {notification.message}
                             </p>
                             <button
