@@ -101,10 +101,10 @@ export default function ParticipantsMonitor() {
                             </div>
 
                             <div className="mb-6">
-                                <h3 className="text-2xl font-black italic tracking-tighter text-gray-950 uppercase line-clamp-1">{team.teamName}</h3>
-                                <p className="text-[10px] font-bold text-gray-400 italic uppercase tracking-widest mt-1">{team.collegeName}</p>
+                                <h3 className="text-2xl font-black italic tracking-tighter text-gray-950 line-clamp-1">{team.teamName}</h3>
+                                <p className="text-[10px] font-bold text-gray-400 italic tracking-widest mt-1">{team.collegeName}</p>
                                 {team.regNos && (
-                                    <p className="text-[10px] font-black text-indigo-500 italic uppercase tracking-widest mt-2">
+                                    <p className="text-[10px] font-black text-indigo-500 italic mt-2">
                                         Reg: {team.regNos}
                                     </p>
                                 )}

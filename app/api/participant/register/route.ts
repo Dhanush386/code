@@ -22,10 +22,10 @@ export async function POST(req: NextRequest) {
             select: { regNos: true, teamName: true }
         });
 
-        const newRegs = regNos.split(',').map((r: string) => r.trim().toUpperCase()).filter(Boolean);
+        const newRegs = regNos.split(',').map((r: string) => r.trim()).filter(Boolean);
 
         for (const p of allParticipants) {
-            const existingRegs = p.regNos.split(',').map(r => r.trim().toUpperCase());
+            const existingRegs = p.regNos.split(',').map(r => r.trim());
             for (const reg of newRegs) {
                 if (existingRegs.includes(reg)) {
                     return NextResponse.json({

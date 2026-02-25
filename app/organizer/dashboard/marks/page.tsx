@@ -142,8 +142,8 @@ export default function MarksDashboard() {
                                     </td>
                                     <td className="px-8 py-6">
                                         <div>
-                                            <p className="font-black italic text-gray-950 uppercase tracking-tight group-hover:text-indigo-600 transition-colors">{team.teamName}</p>
-                                            <p className="text-[10px] font-bold text-gray-400 italic uppercase mt-1">{team.collegeName}</p>
+                                            <p className="font-black italic text-gray-950 tracking-tight group-hover:text-indigo-600 transition-colors">{team.teamName}</p>
+                                            <p className="text-[10px] font-bold text-gray-400 italic mt-1">{team.collegeName}</p>
                                         </div>
                                     </td>
                                     <td className="px-8 py-6 text-center">
