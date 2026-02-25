@@ -33,6 +33,7 @@ model Participant {
   regNos         String            @default("") // Comma-separated registration numbers
   password       String            @default("")
   isLocked       Boolean           @default(false)
+  canAttemptExtra Boolean           @default(false)
   lastActive     DateTime          @default(now())
   submissions    Submission[]
   exams          ParticipantExam[]

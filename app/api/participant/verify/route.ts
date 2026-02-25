@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
                 }
             });
 
-            if (levelAttempt && levelAttempt.attempts >= 2) {
+            if (levelAttempt && levelAttempt.attempts >= 2 && !participant?.canAttemptExtra) {
                 return NextResponse.json({
                     error: 'Maximum entry attempts (2) reached for this code. Please contact proctors if you need further assistance.'
                 }, { status: 403 });
@@ -81,6 +81,25 @@ export async function POST(req: NextRequest) {
 
             if (participant) {
                 participantTime = participant.timeRemaining;
+
+                // Consumption logic: if they are using their extra attempt (3rd+)
+                // We check existing attempts for THIS level
+                const levelAttempt = await prisma.levelAttempt.findUnique({
+                    where: {
+                        participantId_examLevelId: {
+                            participantId,
+                            examLevelId: level.id
+                        }
+                    }
+                });
+
+                if (levelAttempt && levelAttempt.attempts >= 2 && participant.canAttemptExtra) {
+                    await prisma.participant.update({
+                        where: { id: participantId },
+                        data: { canAttemptExtra: false }
+                    });
+                    console.log(`[EXTRA_ATTEMPT] Consumed 1-time grant for team ${participant.teamName} on level ${level.levelNumber}`);
+                }
 
                 const passedSubmissions = await prisma.submission.findMany({
                     where: {

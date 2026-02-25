@@ -11,7 +11,8 @@ import {
     Loader2,
     Trash2,
     Lock,
-    Zap
+    Zap,
+    Plus
 } from 'lucide-react';
 
 interface Participant {
@@ -26,6 +27,7 @@ interface Participant {
     lastActive: string;
     regNos?: string;
     isLocked?: boolean;
+    canAttemptExtra?: boolean;
 }
 
 export default function ParticipantsMonitor() {
@@ -72,6 +74,22 @@ export default function ParticipantsMonitor() {
 
             const updated = await res.json();
             setParticipants(prev => prev.map(p => p.id === id ? { ...p, isLocked: updated.isLocked } : p));
+        } catch (error: any) {
+            alert(error.message);
+        }
+    };
+
+    const handleGrantExtra = async (id: string, currentStatus: boolean) => {
+        try {
+            const res = await fetch(`/api/participant/${id}/extra-attempt`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ canAttemptExtra: !currentStatus })
+            });
+            if (!res.ok) throw new Error('Failed to toggle extra attempt');
+
+            const updated = await res.json();
+            setParticipants(prev => prev.map(p => p.id === id ? { ...p, canAttemptExtra: updated.canAttemptExtra } : p));
         } catch (error: any) {
             alert(error.message);
         }
@@ -146,6 +164,13 @@ export default function ParticipantsMonitor() {
                                 </div>
 
                                 <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handleGrantExtra(team.id, !!team.canAttemptExtra)}
+                                        className={`p-3 rounded-xl transition-all ${team.canAttemptExtra ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-gray-50 text-gray-400 hover:bg-indigo-50 hover:text-indigo-500'}`}
+                                        title={team.canAttemptExtra ? 'Revoke Extra Attempt' : 'Grant Extra Attempt'}
+                                    >
+                                        <Plus size={16} />
+                                    </button>
                                     <button
                                         onClick={() => handleLock(team.id, !!team.isLocked)}
                                         className={`p-3 rounded-xl transition-all ${team.isLocked ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500'}`}
