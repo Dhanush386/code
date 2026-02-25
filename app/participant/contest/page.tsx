@@ -635,7 +635,7 @@ function ContestContent() {
     if (loading || !question) {
         return (
             <div
-                className={`min-h-screen bg-slate-50 dark:bg-gray-950 flex flex-col transition-colors duration-700 ${isDarkMode ? 'dark' : ''}`}
+                className={`min-h-screen bg-white dark:bg-gray-950 flex flex-col transition-colors duration-700 ${isDarkMode ? 'dark' : ''}`}
             >
                 <div className="flex flex-col items-center gap-6">
                     <Loader2 className="animate-spin text-indigo-500" size={60} />
@@ -650,7 +650,7 @@ function ContestContent() {
 
     return (
         <div
-            className="h-screen bg-gray-50 dark:bg-black flex flex-col overflow-hidden font-sans select-none"
+            className="h-screen bg-white dark:bg-gray-950 flex flex-col overflow-hidden font-sans select-none"
             onContextMenu={(e) => e.preventDefault()}
         >
             {/* Header */}
@@ -772,16 +772,16 @@ function ContestContent() {
                             </div>
 
                             <div className="grid grid-cols-1 gap-6">
-                                <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800">
+                                <div className="p-6 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
                                     <h4 className="text-[10px] font-black text-gray-900 dark:text-gray-300 uppercase tracking-widest mb-3 italic">Input Constrain</h4>
                                     <p className="font-bold italic text-gray-950 dark:text-gray-200 text-sm leading-relaxed">{question.inputFormat}</p>
                                 </div>
-                                <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800">
+                                <div className="p-6 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
                                     <h4 className="text-[10px] font-black text-gray-900 dark:text-gray-300 uppercase tracking-widest mb-3 italic">Output Constrain</h4>
                                     <p className="font-bold italic text-gray-950 dark:text-gray-200 text-sm leading-relaxed">{question.outputFormat}</p>
                                 </div>
                                 {question.constraints && (
-                                    <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800">
+                                    <div className="p-6 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
                                         <h4 className="text-[10px] font-black text-gray-900 dark:text-gray-300 uppercase tracking-widest mb-3 italic">Constraints</h4>
                                         <p className="font-bold italic text-gray-950 dark:text-gray-200 text-sm leading-relaxed">{question.constraints}</p>
                                     </div>
