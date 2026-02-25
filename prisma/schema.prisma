@@ -32,6 +32,7 @@ model Participant {
   timeRemaining  Int               @default(-1)
   regNos         String            @default("") // Comma-separated registration numbers
   password       String            @default("")
+  isLocked       Boolean           @default(false)
   lastActive     DateTime          @default(now())
   submissions    Submission[]
   exams          ParticipantExam[]

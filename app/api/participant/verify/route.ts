@@ -32,6 +32,16 @@ export async function POST(req: NextRequest) {
 
         // Check level-specific attempts if participantId is provided
         if (participantId) {
+            const participant = await prisma.participant.findUnique({
+                where: { id: participantId }
+            });
+
+            if (participant?.isLocked) {
+                return NextResponse.json({
+                    error: 'ACCESS REVOKED: Your account has been locked by the proctors. Please contact the help desk immediately.'
+                }, { status: 403 });
+            }
+
             const levelAttempt = await prisma.levelAttempt.findUnique({
                 where: {
                     participantId_examLevelId: {

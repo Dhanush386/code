@@ -309,7 +309,7 @@ function ContestContent() {
         // Initial heartbeat and mark as started
         const sendHeartbeat = async () => {
             try {
-                await fetch('/api/participant/heartbeat', {
+                const res = await fetch('/api/participant/heartbeat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -317,6 +317,23 @@ function ContestContent() {
                         timeRemaining: timeRef.current
                     })
                 });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.isLocked) {
+                        setNotification({
+                            show: true,
+                            message: "ACCESS REVOKED: Your session has been locked by a proctor. Please stop typing immediately.",
+                            type: 'error'
+                        });
+                        // Forced lock state
+                        setTransitionStatus('locked');
+                        setTimeout(() => {
+                            localStorage.removeItem('activeExamCode');
+                            router.push('/participant/exam-entry');
+                        }, 5000);
+                    }
+                }
             } catch (error) {
                 console.error('Heartbeat failed:', error);
             }

@@ -25,6 +25,7 @@ interface Participant {
     isStarted: boolean;
     lastActive: string;
     regNos?: string;
+    isLocked?: boolean;
 }
 
 export default function ParticipantsMonitor() {
@@ -60,12 +61,28 @@ export default function ParticipantsMonitor() {
         }
     };
 
+    const handleLock = async (id: string, currentStatus: boolean) => {
+        try {
+            const res = await fetch(`/api/participant/${id}/lock`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isLocked: !currentStatus })
+            });
+            if (!res.ok) throw new Error('Failed to toggle lock');
+
+            const updated = await res.json();
+            setParticipants(prev => prev.map(p => p.id === id ? { ...p, isLocked: updated.isLocked } : p));
+        } catch (error: any) {
+            alert(error.message);
+        }
+    };
+
     return (
         <div className="space-y-10">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-black italic tracking-tighter text-gray-950 uppercase">Fleet Monitoring</h1>
-                    <p className="text-gray-400 font-bold italic text-sm mt-1 uppercase tracking-widest">Tracking #12 active team sub-systems</p>
+                    <p className="text-gray-400 font-bold italic text-sm mt-1 uppercase tracking-widest">Tracking #{participants.length} active team sub-systems</p>
                 </div>
             </div>
 
@@ -81,20 +98,20 @@ export default function ParticipantsMonitor() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: idx * 0.05 }}
-                            className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-xl shadow-gray-200/30 group hover:border-indigo-500 transition-all"
+                            className={`bg-white rounded-[2.5rem] p-8 border-2 transition-all ${team.isLocked ? 'border-red-500 shadow-2xl shadow-red-200' : 'border-gray-100 shadow-xl shadow-gray-200/30'} group hover:border-indigo-500`}
                         >
                             <div className="flex items-start justify-between mb-6">
-                                <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-500">
+                                <div className={`p-4 rounded-2xl transition-colors duration-500 ${team.isLocked ? 'bg-red-50 text-red-600' : 'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white'}`}>
                                     <Users size={24} />
                                 </div>
                                 <div className="flex flex-col items-end">
-                                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black italic uppercase ${team.isStarted ? 'bg-gray-950 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                                        {team.isStarted ? `Level 0${team.currentLevel}` : 'Waiting...'}
+                                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black italic uppercase ${team.isLocked ? 'bg-red-600 text-white' : team.isStarted ? 'bg-gray-950 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                        {team.isLocked ? 'LOCKED' : team.isStarted ? `Level 0${team.currentLevel}` : 'Waiting...'}
                                     </span>
-                                    <div className={`mt-2 flex items-center gap-1 ${new Date().getTime() - new Date(team.lastActive).getTime() < 60000 ? 'text-emerald-500' : 'text-gray-300'}`}>
+                                    <div className={`mt-2 flex items-center gap-1 ${team.isLocked ? 'text-red-400' : new Date().getTime() - new Date(team.lastActive).getTime() < 60000 ? 'text-emerald-500' : 'text-gray-300'}`}>
                                         <Zap size={10} fill="currentColor" />
                                         <span className="text-[10px] font-black uppercase italic tracking-tighter">
-                                            {new Date().getTime() - new Date(team.lastActive).getTime() < 60000 ? 'Live Connection' : 'Signal Lost'}
+                                            {team.isLocked ? 'Access Terminated' : new Date().getTime() - new Date(team.lastActive).getTime() < 60000 ? 'Live Connection' : 'Signal Lost'}
                                         </span>
                                     </div>
                                 </div>
@@ -110,9 +127,9 @@ export default function ParticipantsMonitor() {
                                 )}
                             </div>
 
-                            <div className="p-4 bg-gray-50 rounded-2xl mb-6">
+                            <div className="p-4 bg-gray-50 rounded-2xl mb-6 font-bold italic text-gray-600 text-xs">
                                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 italic">Unit Components</h4>
-                                <p className="text-xs font-bold italic text-gray-600">{team.members}</p>
+                                {team.members}
                             </div>
 
                             <div className="flex items-center justify-between pt-6 border-t border-gray-50">
@@ -129,12 +146,17 @@ export default function ParticipantsMonitor() {
                                 </div>
 
                                 <div className="flex gap-2">
-                                    <button className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-100 transition-all">
+                                    <button
+                                        onClick={() => handleLock(team.id, !!team.isLocked)}
+                                        className={`p-3 rounded-xl transition-all ${team.isLocked ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500'}`}
+                                        title={team.isLocked ? 'Unlock Participant' : 'Lock Participant'}
+                                    >
                                         <Lock size={16} />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(team.id)}
-                                        className="p-3 bg-red-50 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                                        className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                        title="Terminate Data"
                                     >
                                         <Trash2 size={16} />
                                     </button>
