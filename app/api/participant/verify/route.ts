@@ -9,19 +9,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Access code is required' }, { status: 400 });
         }
 
-        // Check participant attempts if provided
-        if (participantId) {
-            const participant = await prisma.participant.findUnique({
-                where: { id: participantId }
-            });
-
-            if (participant && participant.loginAttempts >= 2) {
-                return NextResponse.json({
-                    error: 'Maximum entry attempts (2) reached for this code. Please contact proctors if you need further assistance.'
-                }, { status: 403 });
-            }
-        }
-
         // Fetch level data
         const level = await prisma.examLevel.findUnique({
             where: { accessCode },
@@ -41,6 +28,24 @@ export async function POST(req: NextRequest) {
 
         if (!level) {
             return NextResponse.json({ error: 'Invalid access code' }, { status: 404 });
+        }
+
+        // Check level-specific attempts if participantId is provided
+        if (participantId) {
+            const levelAttempt = await prisma.levelAttempt.findUnique({
+                where: {
+                    participantId_examLevelId: {
+                        participantId,
+                        examLevelId: level.id
+                    }
+                }
+            });
+
+            if (levelAttempt && levelAttempt.attempts >= 2) {
+                return NextResponse.json({
+                    error: 'Maximum entry attempts (2) reached for this code. Please contact proctors if you need further assistance.'
+                }, { status: 403 });
+            }
         }
 
         // Enforce startTime check
@@ -85,13 +90,21 @@ export async function POST(req: NextRequest) {
                     isPassed: passedIds.has(lq.questionId)
                 }));
             }
-        }
 
-        // Increment attempts on successful code entry
-        if (participantId) {
-            await prisma.participant.update({
-                where: { id: participantId },
-                data: { loginAttempts: { increment: 1 } }
+            // Increment level-specific attempts
+            await prisma.levelAttempt.upsert({
+                where: {
+                    participantId_examLevelId: {
+                        participantId,
+                        examLevelId: level.id
+                    }
+                },
+                update: { attempts: { increment: 1 } },
+                create: {
+                    participantId,
+                    examLevelId: level.id,
+                    attempts: 1
+                }
             });
         }
 

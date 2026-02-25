@@ -35,6 +35,17 @@ model Participant {
   lastActive     DateTime          @default(now())
   submissions    Submission[]
   exams          ParticipantExam[]
+  levelAttempts  LevelAttempt[]
+}
+
+model LevelAttempt {
+  id            String    @id @default(cuid())
+  participantId String
+  examLevelId   String
+  attempts      Int       @default(0)
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  examLevel     ExamLevel   @relation(fields: [examLevelId], references: [id], onDelete: Cascade)
+  @@unique([participantId, examLevelId])
 }
 
 model Question {
@@ -93,6 +104,7 @@ model ExamLevel {
   timeLimit    Int      // Minutes
   startTime    DateTime? // Opening time
   questions    QuestionOnExam[]
+  levelAttempts LevelAttempt[]
 }
 
 model QuestionOnExam {

@@ -129,7 +129,6 @@ export async function POST(req: NextRequest) {
                     if (passedQuestions.length === levelQuestionIds.length && levelQuestionIds.length > 0) {
                         if (participant.currentLevel === levelNumber) {
                             updateData.currentLevel = levelNumber + 1;
-                            updateData.loginAttempts = 0; // Reset for next access code
                         }
                     }
                 }
