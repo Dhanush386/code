@@ -80,10 +80,7 @@ export async function POST(req: NextRequest) {
             });
 
             if (participant) {
-                participantTime = participant.timeRemaining;
-
-                // Consumption logic: if they are using their extra attempt (3rd+)
-                // We check existing attempts for THIS level
+                // Determine if we need to reset time (first time entering THIS level)
                 const levelAttempt = await prisma.levelAttempt.findUnique({
                     where: {
                         participantId_examLevelId: {
@@ -93,7 +90,31 @@ export async function POST(req: NextRequest) {
                     }
                 });
 
-                if (levelAttempt && levelAttempt.attempts >= 2 && participant.canAttemptExtra) {
+                if (!levelAttempt) {
+                    // First entry to this level: reset timeRemaining to -1
+                    // This triggers the client to use the level's default time limit
+                    await prisma.participant.update({
+                        where: { id: participantId },
+                        data: { timeRemaining: -1 }
+                    });
+                    participantTime = -1;
+                    console.log(`[TIMER_RESET] First entry for team ${participant.teamName} to Level ${level.levelNumber}. Timer reset to ${level.timeLimit}m.`);
+                } else {
+                    participantTime = participant.timeRemaining;
+                }
+
+                // Consumption logic: if they are using their extra attempt (3rd+)
+                // We check existing attempts for THIS level
+                const existingLevelAttempt = await prisma.levelAttempt.findUnique({
+                    where: {
+                        participantId_examLevelId: {
+                            participantId,
+                            examLevelId: level.id
+                        }
+                    }
+                });
+
+                if (existingLevelAttempt && existingLevelAttempt.attempts >= 2 && participant.canAttemptExtra) {
                     await prisma.participant.update({
                         where: { id: participantId },
                         data: { canAttemptExtra: false }

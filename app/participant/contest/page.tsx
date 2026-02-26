@@ -218,6 +218,7 @@ function ContestContent() {
                     }
 
                     const initialTime = recoveredTime > 0 ? recoveredTime : levelLimitSeconds;
+                    console.log(`[TIMER_INIT] Level ${level.levelNumber} - ${recoveredTime > 0 ? 'Recovering' : 'Starting fresh'} timer: ${initialTime}s`);
                     setTimeRemaining(initialTime);
                     timeRef.current = initialTime;
                 }
